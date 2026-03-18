@@ -6,8 +6,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type AssignRoleRequest struct {
-	Role string `json:"role"`
+type ReplaceUserRolesRequest struct {
+	UserID  uuid.UUID   `json:"user_id"`
+	RoleIDs []uuid.UUID `json:"role_ids"`
+	RolesID []uuid.UUID `json:"roles_id"`
+}
+
+func (r ReplaceUserRolesRequest) EffectiveRoleIDs() []uuid.UUID {
+	if len(r.RoleIDs) > 0 {
+		return r.RoleIDs
+	}
+	return r.RolesID
+}
+
+type RevokeUserRoleRequest struct {
+	UserID uuid.UUID `json:"user_id"`
+	RoleID uuid.UUID `json:"role_id"`
 }
 
 type RoleResponse struct {

@@ -49,9 +49,9 @@ func Authenticate(jwtMgr *jwtlib.Manager) gin.HandlerFunc {
 	}
 }
 
-func RequireAnyRole(allowedRoles ...string) gin.HandlerFunc {
-	normalizedAllowed := make([]string, 0, len(allowedRoles))
-	for _, role := range allowedRoles {
+func RequireRole(requiredRoles ...string) gin.HandlerFunc {
+	normalizedAllowed := make([]string, 0, len(requiredRoles))
+	for _, role := range requiredRoles {
 		role = domain.NormalizeRoleCode(role)
 		if role != "" {
 			normalizedAllowed = append(normalizedAllowed, role)

@@ -6,7 +6,6 @@ import (
 	"auth-service/internal/http/respond"
 	"auth-service/internal/usecase"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,6 +17,54 @@ type RBACHandler struct {
 
 func NewRBACHandler(uc *usecase.RBAC) *RBACHandler {
 	return &RBACHandler{uc: uc}
+}
+
+func (h *RBACHandler) ListUsers(c *gin.Context) {
+	actorUserID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	users, err := h.uc.ListUsers(c, actorUserID)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, toUserResponses(users))
+}
+
+func (h *RBACHandler) ReplaceUserRoles(c *gin.Context) {
+	actorUserID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	var req dto.ReplaceUserRolesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
+		return
+	}
+	if req.UserID == uuid.Nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "user_id required")
+		return
+	}
+
+	roleIDs := req.EffectiveRoleIDs()
+	if len(roleIDs) == 0 {
+		respond.Error(c, http.StatusBadRequest, "validation", "role_ids required")
+		return
+	}
+
+	roles, err := h.uc.ReplaceUserRoles(c, actorUserID, req.UserID, roleIDs)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, toUserRolesResponse(req.UserID, roles))
 }
 
 func (h *RBACHandler) ListRoles(c *gin.Context) {
@@ -52,52 +99,28 @@ func (h *RBACHandler) GetUserRoles(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, toUserRolesResponse(targetUserID, roles))
 }
 
-func (h *RBACHandler) AssignRole(c *gin.Context) {
+func (h *RBACHandler) UpdateRole(c *gin.Context) {
 	actorUserID, ok := middleware.CurrentUserID(c)
 	if !ok {
 		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
 		return
 	}
 
-	targetUserID, err := uuid.Parse(c.Param("userID"))
-	if err != nil {
-		respond.Error(c, http.StatusBadRequest, "validation", "invalid user id")
-		return
-	}
-
-	var req dto.AssignRoleRequest
+	var req dto.RevokeUserRoleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
 		return
 	}
+	if req.UserID == uuid.Nil || req.RoleID == uuid.Nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "user_id and role_id required")
+		return
+	}
 
-	roles, err := h.uc.AssignRole(c, actorUserID, targetUserID, strings.TrimSpace(req.Role))
+	roles, err := h.uc.RevokeRole(c, actorUserID, req.UserID, req.RoleID)
 	if err != nil {
 		writeDomainError(c, err)
 		return
 	}
 
-	respond.JSON(c, http.StatusOK, toUserRolesResponse(targetUserID, roles))
-}
-
-func (h *RBACHandler) RevokeRole(c *gin.Context) {
-	actorUserID, ok := middleware.CurrentUserID(c)
-	if !ok {
-		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
-		return
-	}
-
-	targetUserID, err := uuid.Parse(c.Param("userID"))
-	if err != nil {
-		respond.Error(c, http.StatusBadRequest, "validation", "invalid user id")
-		return
-	}
-
-	roles, err := h.uc.RevokeRole(c, actorUserID, targetUserID, strings.TrimSpace(c.Param("roleCode")))
-	if err != nil {
-		writeDomainError(c, err)
-		return
-	}
-
-	respond.JSON(c, http.StatusOK, toUserRolesResponse(targetUserID, roles))
+	respond.JSON(c, http.StatusOK, toUserRolesResponse(req.UserID, roles))
 }

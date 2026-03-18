@@ -20,9 +20,7 @@ type UserRepo struct {
 }
 
 func NewUserRepo(db *pgxpool.Pool) *UserRepo {
-	return &UserRepo{
-		db: db,
-	}
+	return &UserRepo{db: db}
 }
 
 func (r *UserRepo) Create(ctx context.Context, u domain.User) error {
@@ -67,6 +65,7 @@ func (r *UserRepo) CreateWithRoles(ctx context.Context, u domain.User, roleCodes
 		_, err = tx.Exec(ctx, `
 			INSERT INTO user_roles (user_id, role_id, assigned_by, assigned_at)
 			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (user_id, role_id) DO NOTHING
 		`, u.ID, role.ID, assignedBy, u.CreatedAt)
 		if err != nil {
 			return err
@@ -198,6 +197,75 @@ func (r *UserRepo) GetRoleByCode(ctx context.Context, code string) (domain.Role,
 	return r.getRoleByCode(ctx, r.db, code)
 }
 
+func (r *UserRepo) GetRoleByID(ctx context.Context, id uuid.UUID) (domain.Role, bool, error) {
+	return r.getRoleByID(ctx, r.db, id)
+}
+
+func (r *UserRepo) ReplaceUserRoles(ctx context.Context, userID uuid.UUID, roleIDs []uuid.UUID, assignedBy *uuid.UUID) error {
+	if len(roleIDs) == 0 {
+		return domain.ErrUserMustHaveRole
+	}
+
+	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `DELETE FROM user_roles WHERE user_id = $1`, userID)
+	if err != nil {
+		return err
+	}
+
+	seen := make(map[uuid.UUID]struct{}, len(roleIDs))
+	for _, roleID := range roleIDs {
+		if _, exists := seen[roleID]; exists {
+			continue
+		}
+		seen[roleID] = struct{}{}
+
+		_, err = tx.Exec(ctx, `
+			INSERT INTO user_roles (user_id, role_id, assigned_by, assigned_at)
+			VALUES ($1, $2, $3, NOW())
+		`, userID, roleID, assignedBy)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
+func (r *UserRepo) RevokeRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) error {
+	tag, err := r.db.Exec(ctx, `
+		DELETE FROM user_roles
+		WHERE user_id = $1 AND role_id = $2
+	`, userID, roleID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrRoleNotAssigned
+	}
+
+	return nil
+}
+
+func (r *UserRepo) CountUsersByRole(ctx context.Context, roleCode string) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx, `
+		SELECT COUNT(*)
+		FROM user_roles ur
+		INNER JOIN roles r ON r.id = ur.role_id
+		WHERE r.code = $1
+	`, domain.NormalizeRoleCode(roleCode)).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (r *UserRepo) getRoleByCode(ctx context.Context, db queryer, code string) (domain.Role, bool, error) {
 	var role domain.Role
 	err := db.QueryRow(ctx, `
@@ -224,66 +292,30 @@ func (r *UserRepo) getRoleByCode(ctx context.Context, db queryer, code string) (
 	return role, true, nil
 }
 
-func (r *UserRepo) AssignRole(ctx context.Context, userID uuid.UUID, roleCode string, assignedBy *uuid.UUID) error {
-	role, ok, err := r.GetRoleByCode(ctx, roleCode)
+func (r *UserRepo) getRoleByID(ctx context.Context, db queryer, id uuid.UUID) (domain.Role, bool, error) {
+	var role domain.Role
+	err := db.QueryRow(ctx, `
+		SELECT id, code, name, description, is_default, is_privileged, is_support, created_at
+		FROM roles
+		WHERE id = $1
+	`, id).Scan(
+		&role.ID,
+		&role.Code,
+		&role.Name,
+		&role.Description,
+		&role.IsDefault,
+		&role.IsPrivileged,
+		&role.IsSupport,
+		&role.CreatedAt,
+	)
 	if err != nil {
-		return err
-	}
-	if !ok {
-		return domain.ErrRoleNotFound
-	}
-
-	tag, err := r.db.Exec(ctx, `
-		INSERT INTO user_roles (user_id, role_id, assigned_by, assigned_at)
-		VALUES ($1, $2, $3, NOW())
-		ON CONFLICT (user_id, role_id) DO NOTHING
-	`, userID, role.ID, assignedBy)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return domain.ErrRoleAlreadyAssigned
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Role{}, false, nil
+		}
+		return domain.Role{}, false, err
 	}
 
-	return nil
-}
-
-func (r *UserRepo) RevokeRole(ctx context.Context, userID uuid.UUID, roleCode string) error {
-	role, ok, err := r.GetRoleByCode(ctx, roleCode)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return domain.ErrRoleNotFound
-	}
-
-	tag, err := r.db.Exec(ctx, `
-		DELETE FROM user_roles
-		WHERE user_id = $1 AND role_id = $2
-	`, userID, role.ID)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return domain.ErrRoleNotAssigned
-	}
-
-	return nil
-}
-
-func (r *UserRepo) CountUsersByRole(ctx context.Context, roleCode string) (int, error) {
-	var count int
-	err := r.db.QueryRow(ctx, `
-		SELECT COUNT(*)
-		FROM user_roles ur
-		INNER JOIN roles r ON r.id = ur.role_id
-		WHERE r.code = $1
-	`, domain.NormalizeRoleCode(roleCode)).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
+	return role, true, nil
 }
 
 func (r *UserRepo) listUserRoles(ctx context.Context, db queryer, userID uuid.UUID) ([]domain.Role, error) {

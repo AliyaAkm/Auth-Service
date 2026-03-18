@@ -4,7 +4,15 @@ import (
 	"auth-service/internal/http/handlers"
 	"auth-service/internal/http/middleware"
 	jwtlib "auth-service/internal/service/jwt"
+
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	RoleStudent = "student"
+	RoleTeacher = "teacher"
+	RoleManager = "manager"
+	RoleAdmin   = "admin"
 )
 
 func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtlib.Manager) *gin.Engine {
@@ -22,13 +30,25 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 		auth.GET("/me", authH.Me)
 	}
 
-	rbac := r.Group("/rbac")
-	rbac.Use(middleware.Authenticate(jwtMgr))
+	usersGroup := r.Group("/users")
+	usersGroup.Use(middleware.Authenticate(jwtMgr), middleware.RequireRole(RoleAdmin, RoleManager))
 	{
-		rbac.GET("/roles", rbacH.ListRoles)
-		rbac.GET("/users/:userID/roles", rbacH.GetUserRoles)
-		rbac.POST("/users/:userID/roles", rbacH.AssignRole)
-		rbac.DELETE("/users/:userID/roles/:roleCode", rbacH.RevokeRole)
+		usersGroup.GET("/", rbacH.ListUsers)
 	}
+
+	rolesGroup := r.Group("/roles")
+	rolesGroup.Use(middleware.Authenticate(jwtMgr), middleware.RequireRole(RoleAdmin, RoleManager))
+	{
+		rolesGroup.GET("/", rbacH.ListRoles)
+	}
+
+	userRolesGroup := r.Group("/user_roles")
+	userRolesGroup.Use(middleware.Authenticate(jwtMgr))
+	{
+		userRolesGroup.GET("/:userID", middleware.RequireRole(RoleAdmin, RoleManager), rbacH.GetUserRoles)
+		userRolesGroup.PATCH("/", middleware.RequireRole(RoleAdmin), rbacH.ReplaceUserRoles)
+		userRolesGroup.POST("/revoke", middleware.RequireRole(RoleAdmin), rbacH.UpdateRole)
+	}
+
 	return r
 }

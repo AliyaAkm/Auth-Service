@@ -16,8 +16,9 @@ type UserRepository interface {
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	ListRoles(ctx context.Context) ([]domain.Role, error)
 	GetRoleByCode(ctx context.Context, code string) (domain.Role, bool, error)
-	AssignRole(ctx context.Context, userID uuid.UUID, roleCode string, assignedBy *uuid.UUID) error
-	RevokeRole(ctx context.Context, userID uuid.UUID, roleCode string) error
+	GetRoleByID(ctx context.Context, id uuid.UUID) (domain.Role, bool, error)
+	ReplaceUserRoles(ctx context.Context, userID uuid.UUID, roleIDs []uuid.UUID, assignedBy *uuid.UUID) error
+	RevokeRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) error
 	CountUsersByRole(ctx context.Context, roleCode string) (int, error)
 }
 

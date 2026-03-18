@@ -17,6 +17,14 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 	}
 }
 
+func toUserResponses(users []domain.User) []dto.UserResponse {
+	result := make([]dto.UserResponse, 0, len(users))
+	for i := range users {
+		result = append(result, toUserResponse(&users[i]))
+	}
+	return result
+}
+
 func toUserRolesResponse(userID uuid.UUID, roles []domain.Role) dto.UserRolesResponse {
 	return dto.UserRolesResponse{
 		UserID: userID,
