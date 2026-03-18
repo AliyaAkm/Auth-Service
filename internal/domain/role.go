@@ -102,3 +102,17 @@ func CanManageRole(roles []Role, targetRole string) bool {
 		return false
 	}
 }
+
+func CanManageUserStatus(actorRoles, targetRoles []Role) bool {
+	if len(targetRoles) == 0 {
+		return false
+	}
+
+	for _, role := range targetRoles {
+		if !CanManageRole(actorRoles, role.Code) {
+			return false
+		}
+	}
+
+	return true
+}

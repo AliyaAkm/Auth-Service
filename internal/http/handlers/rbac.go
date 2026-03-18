@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"auth-service/internal/domain"
 	"auth-service/internal/http/dto"
 	"auth-service/internal/http/middleware"
 	"auth-service/internal/http/respond"
 	"auth-service/internal/usecase"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +37,7 @@ func (h *RBACHandler) ListUsers(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, toUserResponses(users))
 }
 
-func (h *RBACHandler) ReplaceUserRoles(c *gin.Context) {
+func (h *RBACHandler) UpdateUserRoles(c *gin.Context) {
 	actorUserID, ok := middleware.CurrentUserID(c)
 	if !ok {
 		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
@@ -99,7 +101,7 @@ func (h *RBACHandler) GetUserRoles(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, toUserRolesResponse(targetUserID, roles))
 }
 
-func (h *RBACHandler) UpdateRole(c *gin.Context) {
+func (h *RBACHandler) RevokeRoles(c *gin.Context) {
 	actorUserID, ok := middleware.CurrentUserID(c)
 	if !ok {
 		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
@@ -123,4 +125,38 @@ func (h *RBACHandler) UpdateRole(c *gin.Context) {
 	}
 
 	respond.JSON(c, http.StatusOK, toUserRolesResponse(req.UserID, roles))
+}
+
+func (h *RBACHandler) UpdateUserStatus(c *gin.Context) {
+	actorUserID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	var req dto.UpdateUserStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
+		return
+	}
+	if req.UserID == uuid.Nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "user_id required")
+		return
+	}
+	if req.IsActive == nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "is_active required")
+		return
+	}
+
+	user, err := h.uc.UpdateUserStatus(c, actorUserID, req.UserID, *req.IsActive)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			respond.Error(c, http.StatusNotFound, "not_found", domain.ErrNotFound.Error())
+			return
+		}
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, toUserResponse(&user))
 }

@@ -141,6 +141,50 @@ func (r *RBAC) RevokeRole(ctx context.Context, actorUserID, targetUserID, roleID
 	return updated.Roles, nil
 }
 
+func (r *RBAC) UpdateUserStatus(ctx context.Context, actorUserID, targetUserID uuid.UUID, isActive bool) (domain.User, error) {
+	actor, err := r.requireActor(ctx, actorUserID)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if !domain.CanViewOtherUsersRoles(actor.Roles) {
+		return domain.User{}, domain.ErrForbidden
+	}
+
+	target, ok := r.users.FindByID(ctx, targetUserID)
+	if !ok {
+		return domain.User{}, domain.ErrNotFound
+	}
+
+	if !domain.CanManageUserStatus(actor.Roles, target.Roles) {
+		return domain.User{}, domain.ErrForbidden
+	}
+
+	if target.IsActive == isActive {
+		return target, nil
+	}
+
+	if !isActive && domain.HasRole(target.Roles, domain.RoleAdmin) {
+		adminsCount, err := r.users.CountActiveUsersByRole(ctx, domain.RoleAdmin)
+		if err != nil {
+			return domain.User{}, err
+		}
+		if adminsCount <= 1 {
+			return domain.User{}, domain.ErrLastAdminDeactivation
+		}
+	}
+
+	if err := r.users.UpdateStatus(ctx, target.ID, isActive); err != nil {
+		return domain.User{}, err
+	}
+
+	updated, ok := r.users.FindByID(ctx, target.ID)
+	if !ok {
+		return domain.User{}, domain.ErrNotFound
+	}
+
+	return updated, nil
+}
+
 func (r *RBAC) requireActor(ctx context.Context, actorUserID uuid.UUID) (domain.User, error) {
 	actor, ok := r.users.FindByID(ctx, actorUserID)
 	if !ok {

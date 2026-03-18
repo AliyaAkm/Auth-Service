@@ -221,6 +221,38 @@ func (a *Auth) ResetPassword(ctx context.Context, email, code, newPassword strin
 	return nil
 }
 
+func (a *Auth) ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error {
+	user, ok := a.users.FindByID(ctx, userID)
+	if !ok {
+		return domain.ErrNotFound
+	}
+	if !user.IsActive {
+		return domain.ErrInactiveUser
+	}
+	if !a.hasher.Compare(user.PasswordHash, currentPassword) {
+		return domain.ErrCurrentPassword
+	}
+
+	pwHash, err := a.hasher.Hash(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := a.users.UpdatePassword(ctx, user.ID, pwHash); err != nil {
+		return err
+	}
+
+	now := a.now()
+	if err := a.resets.InvalidateActiveByUserID(ctx, user.ID, now); err != nil {
+		return err
+	}
+	if err := a.refresh.RevokeAllByUserID(ctx, user.ID, now); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (a *Auth) GetUserByID(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
 	user, ok := a.users.FindByID(ctx, userID)
 	if !ok {

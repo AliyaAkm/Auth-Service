@@ -14,6 +14,7 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (domain.User, bool)
 	FindByID(ctx context.Context, id uuid.UUID) (domain.User, bool)
 	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
+	UpdateStatus(ctx context.Context, userID uuid.UUID, isActive bool) error
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	ListRoles(ctx context.Context) ([]domain.Role, error)
 	GetRoleByCode(ctx context.Context, code string) (domain.Role, bool, error)
@@ -21,6 +22,7 @@ type UserRepository interface {
 	ReplaceUserRoles(ctx context.Context, userID uuid.UUID, roleIDs []uuid.UUID, assignedBy *uuid.UUID) error
 	RevokeRole(ctx context.Context, userID uuid.UUID, roleID uuid.UUID) error
 	CountUsersByRole(ctx context.Context, roleCode string) (int, error)
+	CountActiveUsersByRole(ctx context.Context, roleCode string) (int, error)
 }
 
 type RefreshRepository interface {

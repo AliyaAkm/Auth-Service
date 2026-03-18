@@ -64,6 +64,16 @@ func (r *authUserRepoStub) UpdatePassword(_ context.Context, userID uuid.UUID, p
 	return nil
 }
 
+func (r *authUserRepoStub) UpdateStatus(_ context.Context, userID uuid.UUID, isActive bool) error {
+	user, ok := r.usersByID[userID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	user.IsActive = isActive
+	r.usersByID[userID] = user
+	return nil
+}
+
 func (r *authUserRepoStub) ListUsers(context.Context) ([]domain.User, error) {
 	return nil, nil
 }
@@ -89,6 +99,10 @@ func (r *authUserRepoStub) RevokeRole(context.Context, uuid.UUID, uuid.UUID) err
 }
 
 func (r *authUserRepoStub) CountUsersByRole(context.Context, string) (int, error) {
+	return 0, nil
+}
+
+func (r *authUserRepoStub) CountActiveUsersByRole(context.Context, string) (int, error) {
 	return 0, nil
 }
 
@@ -308,5 +322,54 @@ func TestResetPasswordUpdatesPasswordAndRevokesSessions(t *testing.T) {
 	}
 	if resetRepo.resets[0].UsedAt == nil {
 		t.Fatal("expected reset code to be marked as used")
+	}
+}
+
+func TestChangePasswordUpdatesPasswordAndRevokesSessions(t *testing.T) {
+	oldHash, err := security.PasswordHasher{}.Hash("oldpassword")
+	if err != nil {
+		t.Fatalf("unexpected hash error: %v", err)
+	}
+
+	user := domain.User{
+		ID:           uuid.New(),
+		Email:        "student@example.com",
+		PasswordHash: oldHash,
+		IsActive:     true,
+		Roles:        []domain.Role{{Code: domain.RoleStudent}},
+	}
+
+	now := time.Date(2026, 3, 18, 11, 0, 0, 0, time.UTC)
+	userRepo := newAuthUserRepoStub(user)
+	refreshRepo := &authRefreshRepoStub{}
+	resetRepo := &authResetRepoStub{}
+
+	uc := NewAuth(
+		userRepo,
+		refreshRepo,
+		resetRepo,
+		security.PasswordHasher{},
+		authTokenIssuerStub{},
+		&authResetSenderStub{},
+		24*time.Hour,
+		15*time.Minute,
+		func() (string, error) { return "123456", nil },
+		uuid.New,
+		func() time.Time { return now },
+	)
+
+	if err := uc.ChangePassword(context.Background(), user.ID, "oldpassword", "newpassword"); err != nil {
+		t.Fatalf("expected nil error, got %v", err)
+	}
+
+	updatedUser, ok := userRepo.FindByID(context.Background(), user.ID)
+	if !ok {
+		t.Fatal("expected updated user to exist")
+	}
+	if !(security.PasswordHasher{}).Compare(updatedUser.PasswordHash, "newpassword") {
+		t.Fatal("expected updated password hash to match new password")
+	}
+	if len(refreshRepo.revokedAllFor) != 1 || refreshRepo.revokedAllFor[0] != user.ID {
+		t.Fatal("expected all refresh sessions to be revoked")
 	}
 }

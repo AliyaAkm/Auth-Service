@@ -27,6 +27,7 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 		auth.POST("/login", authH.Login)
 		auth.POST("/forgot-password", authH.ForgotPassword)
 		auth.POST("/reset-password", authH.ResetPassword)
+		auth.POST("/change-password", middleware.Authenticate(jwtMgr), authH.ChangePassword)
 		auth.POST("/refresh", authH.Refresh)
 		auth.POST("/logout", authH.Logout)
 		auth.GET("/me", authH.Me)
@@ -36,6 +37,7 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 	usersGroup.Use(middleware.Authenticate(jwtMgr), middleware.RequireRole(RoleAdmin, RoleManager))
 	{
 		usersGroup.GET("/", rbacH.ListUsers)
+		usersGroup.PATCH("/status", rbacH.UpdateUserStatus)
 	}
 
 	rolesGroup := r.Group("/roles")
@@ -48,8 +50,8 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 	userRolesGroup.Use(middleware.Authenticate(jwtMgr))
 	{
 		userRolesGroup.GET("/:userID", middleware.RequireRole(RoleAdmin, RoleManager), rbacH.GetUserRoles)
-		userRolesGroup.PATCH("/", middleware.RequireRole(RoleAdmin), rbacH.ReplaceUserRoles)
-		userRolesGroup.POST("/revoke", middleware.RequireRole(RoleAdmin), rbacH.UpdateRole)
+		userRolesGroup.PATCH("/", middleware.RequireRole(RoleAdmin), rbacH.UpdateUserRoles)
+		userRolesGroup.POST("/revoke", middleware.RequireRole(RoleAdmin), rbacH.RevokeRoles)
 	}
 
 	return r

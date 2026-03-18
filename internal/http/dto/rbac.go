@@ -24,6 +24,11 @@ type RevokeUserRoleRequest struct {
 	RoleID uuid.UUID `json:"role_id"`
 }
 
+type UpdateUserStatusRequest struct {
+	UserID   uuid.UUID `json:"user_id"`
+	IsActive *bool     `json:"is_active"`
+}
+
 type RoleResponse struct {
 	ID           uuid.UUID `json:"id"`
 	Code         string    `json:"code"`

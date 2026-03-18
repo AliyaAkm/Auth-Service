@@ -147,6 +147,22 @@ func (r *UserRepo) UpdatePassword(ctx context.Context, userID uuid.UUID, passwor
 	return nil
 }
 
+func (r *UserRepo) UpdateStatus(ctx context.Context, userID uuid.UUID, isActive bool) error {
+	tag, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET is_active = $2
+		WHERE id = $1
+	`, userID, isActive)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
+}
+
 func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT id, email, password_hash, is_active, created_at
@@ -274,6 +290,22 @@ func (r *UserRepo) CountUsersByRole(ctx context.Context, roleCode string) (int, 
 		FROM user_roles ur
 		INNER JOIN roles r ON r.id = ur.role_id
 		WHERE r.code = $1
+	`, domain.NormalizeRoleCode(roleCode)).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *UserRepo) CountActiveUsersByRole(ctx context.Context, roleCode string) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx, `
+		SELECT COUNT(*)
+		FROM user_roles ur
+		INNER JOIN roles r ON r.id = ur.role_id
+		INNER JOIN users u ON u.id = ur.user_id
+		WHERE r.code = $1 AND u.is_active = TRUE
 	`, domain.NormalizeRoleCode(roleCode)).Scan(&count)
 	if err != nil {
 		return 0, err

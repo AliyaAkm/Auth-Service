@@ -79,6 +79,16 @@ func (r *rbacRepoStub) UpdatePassword(_ context.Context, userID uuid.UUID, passw
 	return nil
 }
 
+func (r *rbacRepoStub) UpdateStatus(_ context.Context, userID uuid.UUID, isActive bool) error {
+	user, ok := r.users[userID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	user.IsActive = isActive
+	r.users[userID] = user
+	return nil
+}
+
 func (r *rbacRepoStub) ListUsers(context.Context) ([]domain.User, error) {
 	users := make([]domain.User, 0, len(r.users))
 	for _, user := range r.users {
@@ -151,6 +161,16 @@ func (r *rbacRepoStub) CountUsersByRole(_ context.Context, roleCode string) (int
 	count := 0
 	for _, user := range r.users {
 		if domain.HasRole(user.Roles, roleCode) {
+			count++
+		}
+	}
+	return count, nil
+}
+
+func (r *rbacRepoStub) CountActiveUsersByRole(_ context.Context, roleCode string) (int, error) {
+	count := 0
+	for _, user := range r.users {
+		if user.IsActive && domain.HasRole(user.Roles, roleCode) {
 			count++
 		}
 	}
@@ -246,5 +266,54 @@ func TestRevokeRoleRejectsLastAdminRemoval(t *testing.T) {
 	_, err := uc.RevokeRole(context.Background(), adminID, adminID, adminRole.ID)
 	if err != domain.ErrLastAdminRemoval {
 		t.Fatalf("expected last admin removal, got %v", err)
+	}
+}
+
+func TestUpdateUserStatusAllowsManagerToDeactivateTeacher(t *testing.T) {
+	managerID := uuid.New()
+	teacherID := uuid.New()
+
+	repo := newRBACRepoStub(
+		domain.User{ID: managerID, IsActive: true, Roles: []domain.Role{{Code: domain.RoleManager}}},
+		domain.User{ID: teacherID, IsActive: true, Roles: []domain.Role{{Code: domain.RoleTeacher}}},
+	)
+
+	uc := newRBACUseCase(repo)
+	updated, err := uc.UpdateUserStatus(context.Background(), managerID, teacherID, false)
+	if err != nil {
+		t.Fatalf("expected nil error, got %v", err)
+	}
+	if updated.IsActive {
+		t.Fatal("expected teacher to be deactivated")
+	}
+}
+
+func TestUpdateUserStatusRejectsManagerDeactivatingAdmin(t *testing.T) {
+	managerID := uuid.New()
+	adminID := uuid.New()
+
+	repo := newRBACRepoStub(
+		domain.User{ID: managerID, IsActive: true, Roles: []domain.Role{{Code: domain.RoleManager}}},
+		domain.User{ID: adminID, IsActive: true, Roles: []domain.Role{{Code: domain.RoleAdmin}}},
+	)
+
+	uc := newRBACUseCase(repo)
+	_, err := uc.UpdateUserStatus(context.Background(), managerID, adminID, false)
+	if err != domain.ErrForbidden {
+		t.Fatalf("expected forbidden, got %v", err)
+	}
+}
+
+func TestUpdateUserStatusRejectsLastActiveAdminDeactivation(t *testing.T) {
+	adminID := uuid.New()
+
+	repo := newRBACRepoStub(
+		domain.User{ID: adminID, IsActive: true, Roles: []domain.Role{{Code: domain.RoleAdmin}}},
+	)
+
+	uc := newRBACUseCase(repo)
+	_, err := uc.UpdateUserStatus(context.Background(), adminID, adminID, false)
+	if err != domain.ErrLastAdminDeactivation {
+		t.Fatalf("expected last admin deactivation, got %v", err)
 	}
 }

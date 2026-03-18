@@ -3,6 +3,7 @@ package handlers
 import (
 	"auth-service/internal/domain"
 	"auth-service/internal/http/dto"
+	"auth-service/internal/http/middleware"
 	"auth-service/internal/http/respond"
 	jwtlib "auth-service/internal/service/jwt"
 	"auth-service/internal/usecase"
@@ -171,6 +172,38 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	})
 }
 
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
+	userID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	var req dto.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
+		return
+	}
+
+	if strings.TrimSpace(req.CurrentPassword) == "" {
+		respond.Error(c, http.StatusBadRequest, "validation", "current_password required")
+		return
+	}
+	if err := domain.ValidatePassword(req.NewPassword); err != nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "invalid password")
+		return
+	}
+
+	if err := h.uc.ChangePassword(c, userID, req.CurrentPassword, req.NewPassword); err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, gin.H{
+		"message": "Password has been changed successfully.",
+	})
+}
+
 func (h *AuthHandler) Me(c *gin.Context) {
 	tokenStr := bearerToken(c)
 	if tokenStr == "" {
@@ -221,6 +254,8 @@ func writeDomainError(c *gin.Context, err error) {
 		respond.Error(c, http.StatusConflict, "email_taken", domain.ErrEmailTaken.Error())
 	case errors.Is(err, domain.ErrInvalidCredentials):
 		respond.Error(c, http.StatusUnauthorized, "invalid_credentials", domain.ErrInvalidCredentials.Error())
+	case errors.Is(err, domain.ErrCurrentPassword):
+		respond.Error(c, http.StatusUnauthorized, "current_password_invalid", domain.ErrCurrentPassword.Error())
 	case errors.Is(err, domain.ErrInvalidResetCode):
 		respond.Error(c, http.StatusBadRequest, "invalid_reset_code", domain.ErrInvalidResetCode.Error())
 	case errors.Is(err, domain.ErrInactiveUser):
@@ -239,6 +274,8 @@ func writeDomainError(c *gin.Context, err error) {
 		respond.Error(c, http.StatusConflict, "user_must_have_role", domain.ErrUserMustHaveRole.Error())
 	case errors.Is(err, domain.ErrLastAdminRemoval):
 		respond.Error(c, http.StatusConflict, "last_admin_removal", domain.ErrLastAdminRemoval.Error())
+	case errors.Is(err, domain.ErrLastAdminDeactivation):
+		respond.Error(c, http.StatusConflict, "last_admin_deactivation", domain.ErrLastAdminDeactivation.Error())
 	default:
 		c.Error(err)
 		respond.Error(c, http.StatusInternalServerError, "internal", domain.ErrInternal.Error())
