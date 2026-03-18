@@ -8,6 +8,6 @@ import (
 type UserRoles struct {
 	UserID     uuid.UUID
 	RoleID     uuid.UUID
-	AssignedBy uuid.UUID
+	AssignedBy *uuid.UUID
 	AssignedAt time.Time
 }

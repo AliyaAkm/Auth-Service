@@ -60,10 +60,12 @@ func main() {
 		uuid.New,
 		time.Now,
 	)
+	rbacUC := usecase.NewRBAC(userRepo)
 
 	authH := handlers.NewAuthHandler(authUC, jwtMgr)
+	rbacH := handlers.NewRBACHandler(rbacUC)
 
-	engine := router.New(authH)
+	engine := router.New(authH, rbacH, jwtMgr)
 
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,

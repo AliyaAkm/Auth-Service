@@ -10,9 +10,15 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, u domain.User) error
+	CreateWithRoles(ctx context.Context, u domain.User, roleCodes []string, assignedBy *uuid.UUID) error
 	FindByEmail(ctx context.Context, email string) (domain.User, bool)
 	FindByID(ctx context.Context, id uuid.UUID) (domain.User, bool)
-	FindUserRoles(ctx context.Context, id uuid.UUID) (*domain.Role, bool)
+	ListUsers(ctx context.Context) ([]domain.User, error)
+	ListRoles(ctx context.Context) ([]domain.Role, error)
+	GetRoleByCode(ctx context.Context, code string) (domain.Role, bool, error)
+	AssignRole(ctx context.Context, userID uuid.UUID, roleCode string, assignedBy *uuid.UUID) error
+	RevokeRole(ctx context.Context, userID uuid.UUID, roleCode string) error
+	CountUsersByRole(ctx context.Context, roleCode string) (int, error)
 }
 
 type RefreshRepository interface {
@@ -22,7 +28,7 @@ type RefreshRepository interface {
 }
 
 type TokenIssuer interface {
-	NewAccessToken(userID uuid.UUID, role string, isActive bool) (string, error)
+	NewAccessToken(userID uuid.UUID, primaryRole string, roles []string, isActive bool) (string, error)
 	VerifyAccessToken(tokenStr string) (*jwt.Claims, error)
 }
 

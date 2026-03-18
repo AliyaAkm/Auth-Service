@@ -2,8 +2,24 @@ package domain
 
 import (
 	"github.com/google/uuid"
+	"slices"
+	"strings"
 	"time"
 )
+
+const (
+	RoleStudent = "student"
+	RoleTeacher = "teacher"
+	RoleManager = "manager"
+	RoleAdmin   = "admin"
+)
+
+var rolePriority = map[string]int{
+	RoleStudent: 1,
+	RoleTeacher: 2,
+	RoleManager: 3,
+	RoleAdmin:   4,
+}
 
 type Role struct {
 	ID           uuid.UUID
@@ -14,4 +30,75 @@ type Role struct {
 	IsPrivileged bool
 	IsSupport    bool
 	CreatedAt    time.Time
+}
+
+func NormalizeRoleCode(code string) string {
+	return strings.ToLower(strings.TrimSpace(code))
+}
+
+func IsValidRoleCode(code string) bool {
+	_, ok := rolePriority[NormalizeRoleCode(code)]
+	return ok
+}
+
+func RoleCodes() []string {
+	return []string{RoleStudent, RoleTeacher, RoleManager, RoleAdmin}
+}
+
+func RoleCodesFromRoles(roles []Role) []string {
+	codes := make([]string, 0, len(roles))
+	for _, role := range roles {
+		code := NormalizeRoleCode(role.Code)
+		if code == "" || slices.Contains(codes, code) {
+			continue
+		}
+		codes = append(codes, code)
+	}
+	return codes
+}
+
+func HasRole(roles []Role, want string) bool {
+	want = NormalizeRoleCode(want)
+	for _, role := range roles {
+		if NormalizeRoleCode(role.Code) == want {
+			return true
+		}
+	}
+	return false
+}
+
+func PrimaryRoleCode(roles []Role) string {
+	var primary string
+	maxPriority := -1
+
+	for _, role := range roles {
+		code := NormalizeRoleCode(role.Code)
+		priority, ok := rolePriority[code]
+		if !ok {
+			continue
+		}
+		if priority > maxPriority {
+			maxPriority = priority
+			primary = code
+		}
+	}
+
+	return primary
+}
+
+func CanViewOtherUsersRoles(roles []Role) bool {
+	return HasRole(roles, RoleManager) || HasRole(roles, RoleAdmin)
+}
+
+func CanManageRole(roles []Role, targetRole string) bool {
+	targetRole = NormalizeRoleCode(targetRole)
+
+	switch {
+	case HasRole(roles, RoleAdmin):
+		return IsValidRoleCode(targetRole)
+	case HasRole(roles, RoleManager):
+		return targetRole == RoleStudent || targetRole == RoleTeacher
+	default:
+		return false
+	}
 }

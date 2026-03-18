@@ -1,18 +1,17 @@
 package handlers
 
 import (
-	"errors"
-	"github.com/google/uuid"
-	"net/http"
-	"strings"
-
 	"auth-service/internal/domain"
 	"auth-service/internal/http/dto"
 	"auth-service/internal/http/respond"
 	jwtlib "auth-service/internal/service/jwt"
 	"auth-service/internal/usecase"
+	"errors"
+	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AuthHandler struct {
@@ -20,7 +19,6 @@ type AuthHandler struct {
 	jwtMgr *jwtlib.Manager
 }
 
-// todo: interface for uc (port.go)
 func NewAuthHandler(uc *usecase.Auth, jwtMgr *jwtlib.Manager) *AuthHandler {
 	return &AuthHandler{uc: uc, jwtMgr: jwtMgr}
 }
@@ -31,6 +29,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
 		return
 	}
+
 	email := normalizeEmail(req.Email)
 	if err := domain.ValidateEmail(email); err != nil {
 		respond.Error(c, http.StatusBadRequest, "validation", "invalid email")
@@ -41,7 +40,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	tokens, err := h.uc.Register(c, req.Email, req.Password)
+	tokens, err := h.uc.Register(c, email, req.Password)
 	if err != nil {
 		writeDomainError(c, err)
 		return
@@ -67,7 +66,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	tokens, err := h.uc.Login(c, req.Email, req.Password)
+	tokens, err := h.uc.Login(c, email, req.Password)
 	if err != nil {
 		writeDomainError(c, err)
 		return
@@ -127,34 +126,36 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		respond.Error(c, http.StatusUnauthorized, "unauthorized", "invalid token")
 		return
 	}
+
 	userID, err := uuid.Parse(claims.Subject)
 	if err != nil {
 		respond.Error(c, http.StatusBadRequest, "validation", "invalid user id")
+		return
 	}
+
 	user, err := h.uc.GetUserByID(c, userID)
 	if err != nil {
 		writeDomainError(c, err)
 		return
 	}
 
-	respond.JSON(c, http.StatusOK, user)
-
+	respond.JSON(c, http.StatusOK, toUserResponse(user))
 }
 
 func bearerToken(c *gin.Context) string {
-	h := c.GetHeader("Authorization")
-	if h == "" {
+	header := c.GetHeader("Authorization")
+	if header == "" {
 		return ""
 	}
+
 	const prefix = "Bearer "
-	if !strings.HasPrefix(h, prefix) {
+	if !strings.HasPrefix(header, prefix) {
 		return ""
 	}
-	return strings.TrimSpace(strings.TrimPrefix(h, prefix))
+
+	return strings.TrimSpace(strings.TrimPrefix(header, prefix))
 }
 
-// todo: все коды перенести в константы, объявлять тут
-// todo: вниз пробросить respond.Error и вызывать его просто сверху , использовать структуру error
 func writeDomainError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, domain.ErrValidation):
@@ -165,8 +166,20 @@ func writeDomainError(c *gin.Context, err error) {
 		respond.Error(c, http.StatusUnauthorized, "invalid_credentials", domain.ErrInvalidCredentials.Error())
 	case errors.Is(err, domain.ErrInactiveUser):
 		respond.Error(c, http.StatusForbidden, "inactive_user", domain.ErrInactiveUser.Error())
+	case errors.Is(err, domain.ErrForbidden):
+		respond.Error(c, http.StatusForbidden, "forbidden", domain.ErrForbidden.Error())
 	case errors.Is(err, domain.ErrInvalidToken), errors.Is(err, domain.ErrSessionRevoked):
 		respond.Error(c, http.StatusUnauthorized, "invalid_token", domain.ErrInvalidToken.Error())
+	case errors.Is(err, domain.ErrRoleNotFound):
+		respond.Error(c, http.StatusNotFound, "role_not_found", domain.ErrRoleNotFound.Error())
+	case errors.Is(err, domain.ErrRoleAlreadyAssigned):
+		respond.Error(c, http.StatusConflict, "role_already_assigned", domain.ErrRoleAlreadyAssigned.Error())
+	case errors.Is(err, domain.ErrRoleNotAssigned):
+		respond.Error(c, http.StatusNotFound, "role_not_assigned", domain.ErrRoleNotAssigned.Error())
+	case errors.Is(err, domain.ErrUserMustHaveRole):
+		respond.Error(c, http.StatusConflict, "user_must_have_role", domain.ErrUserMustHaveRole.Error())
+	case errors.Is(err, domain.ErrLastAdminRemoval):
+		respond.Error(c, http.StatusConflict, "last_admin_removal", domain.ErrLastAdminRemoval.Error())
 	default:
 		c.Error(err)
 		respond.Error(c, http.StatusInternalServerError, "internal", domain.ErrInternal.Error())

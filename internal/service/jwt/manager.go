@@ -9,8 +9,9 @@ import (
 )
 
 type Claims struct {
-	Role     string `json:"role"`
-	IsActive bool   `json:"is_active"`
+	Role     string   `json:"role"`
+	Roles    []string `json:"roles,omitempty"`
+	IsActive bool     `json:"is_active"`
 	jwtlib.RegisteredClaims
 }
 
@@ -25,10 +26,11 @@ func New(secret []byte, issuer, audience string, ttl time.Duration) *Manager {
 	return &Manager{secret: secret, issuer: issuer, audience: audience, ttl: ttl}
 }
 
-func (m *Manager) NewAccessToken(userID uuid.UUID, role string, isActive bool) (string, error) {
+func (m *Manager) NewAccessToken(userID uuid.UUID, primaryRole string, roles []string, isActive bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
-		Role:     role,
+		Role:     primaryRole,
+		Roles:    normalizeRoleClaims(primaryRole, roles),
 		IsActive: isActive,
 		RegisteredClaims: jwtlib.RegisteredClaims{
 			Issuer:    m.issuer,
@@ -73,6 +75,11 @@ func (m *Manager) Verify(tokenStr string) (*Claims, error) {
 		return nil, domain.ErrInvalidToken
 	}
 
+	claims.Roles = normalizeRoleClaims(claims.Role, claims.Roles)
+	if claims.Role == "" && len(claims.Roles) > 0 {
+		claims.Role = claims.Roles[0]
+	}
+
 	return claims, nil
 }
 
@@ -83,4 +90,28 @@ func audienceHas(auds jwtlib.ClaimStrings, want string) bool {
 		}
 	}
 	return false
+}
+
+func normalizeRoleClaims(primaryRole string, roles []string) []string {
+	normalized := make([]string, 0, len(roles)+1)
+
+	add := func(role string) {
+		role = domain.NormalizeRoleCode(role)
+		if role == "" || !domain.IsValidRoleCode(role) {
+			return
+		}
+		for _, existing := range normalized {
+			if existing == role {
+				return
+			}
+		}
+		normalized = append(normalized, role)
+	}
+
+	add(primaryRole)
+	for _, role := range roles {
+		add(role)
+	}
+
+	return normalized
 }
