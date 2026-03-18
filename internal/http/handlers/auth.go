@@ -114,6 +114,63 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req dto.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
+		return
+	}
+
+	email := normalizeEmail(req.Email)
+	if err := domain.ValidateEmail(email); err != nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "invalid email")
+		return
+	}
+
+	if err := h.uc.ForgotPassword(c, email); err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusAccepted, gin.H{
+		"message": "If the account exists, password reset instructions will be sent.",
+	})
+}
+
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	var req dto.ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
+		return
+	}
+
+	email := normalizeEmail(req.Email)
+	if err := domain.ValidateEmail(email); err != nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "invalid email")
+		return
+	}
+
+	code := strings.TrimSpace(req.Code)
+	if code == "" {
+		respond.Error(c, http.StatusBadRequest, "validation", "code required")
+		return
+	}
+
+	if err := domain.ValidatePassword(req.NewPassword); err != nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "invalid password")
+		return
+	}
+
+	if err := h.uc.ResetPassword(c, email, code, req.NewPassword); err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, gin.H{
+		"message": "Password has been reset successfully.",
+	})
+}
+
 func (h *AuthHandler) Me(c *gin.Context) {
 	tokenStr := bearerToken(c)
 	if tokenStr == "" {
@@ -164,6 +221,8 @@ func writeDomainError(c *gin.Context, err error) {
 		respond.Error(c, http.StatusConflict, "email_taken", domain.ErrEmailTaken.Error())
 	case errors.Is(err, domain.ErrInvalidCredentials):
 		respond.Error(c, http.StatusUnauthorized, "invalid_credentials", domain.ErrInvalidCredentials.Error())
+	case errors.Is(err, domain.ErrInvalidResetCode):
+		respond.Error(c, http.StatusBadRequest, "invalid_reset_code", domain.ErrInvalidResetCode.Error())
 	case errors.Is(err, domain.ErrInactiveUser):
 		respond.Error(c, http.StatusForbidden, "inactive_user", domain.ErrInactiveUser.Error())
 	case errors.Is(err, domain.ErrForbidden):

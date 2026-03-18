@@ -15,25 +15,45 @@ type Tokens struct {
 }
 
 type Auth struct {
-	users   UserRepository
-	refresh RefreshRepository
-	hasher  PasswordHasher
-	issuer  TokenIssuer
+	users       UserRepository
+	refresh     RefreshRepository
+	resets      PasswordResetRepository
+	hasher      PasswordHasher
+	issuer      TokenIssuer
+	resetSender PasswordResetCodeSender
 
-	refreshTTL time.Duration
-	now        func() time.Time
-	uuidNew    func() uuid.UUID
+	refreshTTL   time.Duration
+	resetCodeTTL time.Duration
+	resetCodeNew func() (string, error)
+	now          func() time.Time
+	uuidNew      func() uuid.UUID
 }
 
-func NewAuth(users UserRepository, refresh RefreshRepository, hasher PasswordHasher, issuer TokenIssuer, refreshTTL time.Duration, uuidNew func() uuid.UUID, now func() time.Time) *Auth {
+func NewAuth(
+	users UserRepository,
+	refresh RefreshRepository,
+	resets PasswordResetRepository,
+	hasher PasswordHasher,
+	issuer TokenIssuer,
+	resetSender PasswordResetCodeSender,
+	refreshTTL time.Duration,
+	resetCodeTTL time.Duration,
+	resetCodeNew func() (string, error),
+	uuidNew func() uuid.UUID,
+	now func() time.Time,
+) *Auth {
 	return &Auth{
-		users:      users,
-		refresh:    refresh,
-		hasher:     hasher,
-		issuer:     issuer,
-		refreshTTL: refreshTTL,
-		uuidNew:    uuidNew,
-		now:        now,
+		users:        users,
+		refresh:      refresh,
+		resets:       resets,
+		hasher:       hasher,
+		issuer:       issuer,
+		resetSender:  resetSender,
+		refreshTTL:   refreshTTL,
+		resetCodeTTL: resetCodeTTL,
+		resetCodeNew: resetCodeNew,
+		uuidNew:      uuidNew,
+		now:          now,
 	}
 }
 
@@ -127,6 +147,77 @@ func (a *Auth) Logout(ctx context.Context, refreshToken string) error {
 	}
 
 	a.refresh.RevokeByHash(ctx, hash, a.now())
+	return nil
+}
+
+func (a *Auth) ForgotPassword(ctx context.Context, email string) error {
+	user, ok := a.users.FindByEmail(ctx, email)
+	if !ok || !user.IsActive {
+		return nil
+	}
+
+	code, err := a.resetCodeNew()
+	if err != nil {
+		return err
+	}
+
+	now := a.now()
+	if err := a.resets.InvalidateActiveByUserID(ctx, user.ID, now); err != nil {
+		return err
+	}
+
+	reset := domain.PasswordResetCode{
+		ID:        a.uuidNew(),
+		UserID:    user.ID,
+		CodeHash:  security.HashToken(code),
+		ExpiresAt: now.Add(a.resetCodeTTL),
+		CreatedAt: now,
+	}
+	if err := a.resets.Create(ctx, reset); err != nil {
+		return err
+	}
+
+	if err := a.resetSender.SendPasswordResetCode(ctx, user.Email, code); err != nil {
+		_ = a.resets.InvalidateActiveByUserID(ctx, user.ID, now)
+		return err
+	}
+
+	// The endpoint intentionally returns the same response for existing and
+	// non-existing emails to avoid account enumeration.
+	return nil
+}
+
+func (a *Auth) ResetPassword(ctx context.Context, email, code, newPassword string) error {
+	user, ok := a.users.FindByEmail(ctx, email)
+	if !ok || !user.IsActive {
+		return domain.ErrInvalidResetCode
+	}
+
+	reset, ok, err := a.resets.GetActiveByUserIDAndCodeHash(ctx, user.ID, security.HashToken(code), a.now())
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return domain.ErrInvalidResetCode
+	}
+
+	pwHash, err := a.hasher.Hash(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := a.users.UpdatePassword(ctx, user.ID, pwHash); err != nil {
+		return err
+	}
+
+	now := a.now()
+	if err := a.resets.MarkUsed(ctx, reset.ID, now); err != nil {
+		return err
+	}
+	if err := a.refresh.RevokeAllByUserID(ctx, user.ID, now); err != nil {
+		return err
+	}
+
 	return nil
 }
 

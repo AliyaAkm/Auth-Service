@@ -131,6 +131,22 @@ func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (domain.User, boo
 	return u, true
 }
 
+func (r *UserRepo) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
+	tag, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET password_hash = $2
+		WHERE id = $1
+	`, userID, passwordHash)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
+}
+
 func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT id, email, password_hash, is_active, created_at

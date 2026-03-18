@@ -2,6 +2,7 @@ package main
 
 import (
 	jwtlib "auth-service/internal/service/jwt"
+	"auth-service/internal/service/notification"
 	"context"
 	"errors"
 	"github.com/google/uuid"
@@ -41,8 +42,21 @@ func main() {
 
 	userRepo := postgres.NewUserRepo(pool)
 	refreshRepo := postgres.NewRefreshRepo(pool)
+	resetRepo := postgres.NewPasswordResetRepo(pool)
 
 	hasher := security.PasswordHasher{}
+	resetSender, err := notification.NewSMTPPasswordResetCodeSender(
+		cfg.SMTP.Host,
+		cfg.SMTP.Port,
+		cfg.SMTP.Username,
+		cfg.SMTP.Password,
+		cfg.SMTP.FromEmail,
+		cfg.SMTP.FromName,
+		cfg.SMTP.PasswordResetSubject,
+	)
+	if err != nil {
+		log.Fatal("smtp configuration error:", err)
+	}
 
 	jwtMgr := jwtlib.New(
 		[]byte(cfg.JWT.Secret),
@@ -54,9 +68,13 @@ func main() {
 	authUC := usecase.NewAuth(
 		userRepo,
 		refreshRepo,
+		resetRepo,
 		hasher,
 		jwtMgr,
+		resetSender,
 		cfg.JWT.RefreshTTL,
+		15*time.Minute,
+		security.NewPasswordResetCode,
 		uuid.New,
 		time.Now,
 	)

@@ -69,6 +69,16 @@ func (r *rbacRepoStub) FindByID(_ context.Context, id uuid.UUID) (domain.User, b
 	return user, ok
 }
 
+func (r *rbacRepoStub) UpdatePassword(_ context.Context, userID uuid.UUID, passwordHash string) error {
+	user, ok := r.users[userID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	user.PasswordHash = passwordHash
+	r.users[userID] = user
+	return nil
+}
+
 func (r *rbacRepoStub) ListUsers(context.Context) ([]domain.User, error) {
 	users := make([]domain.User, 0, len(r.users))
 	for _, user := range r.users {

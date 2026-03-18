@@ -4,6 +4,7 @@ import (
 	"auth-service/internal/domain"
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
@@ -49,5 +50,14 @@ func (r *RefreshRepo) RevokeByHash(ctx context.Context, hash string, when time.T
         SET revoked_at = $2
         WHERE refresh_token_hash = $1 AND revoked_at IS NULL
     `, hash, when)
+	return err
+}
+
+func (r *RefreshRepo) RevokeAllByUserID(ctx context.Context, userID uuid.UUID, when time.Time) error {
+	_, err := r.db.Exec(ctx, `
+		UPDATE refresh_sessions
+		SET revoked_at = $2
+		WHERE user_id = $1 AND revoked_at IS NULL
+	`, userID, when)
 	return err
 }

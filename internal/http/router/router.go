@@ -25,6 +25,8 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 	{
 		auth.POST("/register", authH.Register)
 		auth.POST("/login", authH.Login)
+		auth.POST("/forgot-password", authH.ForgotPassword)
+		auth.POST("/reset-password", authH.ResetPassword)
 		auth.POST("/refresh", authH.Refresh)
 		auth.POST("/logout", authH.Logout)
 		auth.GET("/me", authH.Me)

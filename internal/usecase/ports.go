@@ -13,6 +13,7 @@ type UserRepository interface {
 	CreateWithRoles(ctx context.Context, u domain.User, roleCodes []string, assignedBy *uuid.UUID) error
 	FindByEmail(ctx context.Context, email string) (domain.User, bool)
 	FindByID(ctx context.Context, id uuid.UUID) (domain.User, bool)
+	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	ListRoles(ctx context.Context) ([]domain.Role, error)
 	GetRoleByCode(ctx context.Context, code string) (domain.Role, bool, error)
@@ -26,6 +27,7 @@ type RefreshRepository interface {
 	Create(ctx context.Context, s domain.RefreshSession) error
 	GetByHash(ctx context.Context, hash string) (domain.RefreshSession, bool)
 	RevokeByHash(ctx context.Context, hash string, when time.Time) error
+	RevokeAllByUserID(ctx context.Context, userID uuid.UUID, when time.Time) error
 }
 
 type TokenIssuer interface {
@@ -36,4 +38,15 @@ type TokenIssuer interface {
 type PasswordHasher interface {
 	Hash(plain string) (string, error)
 	Compare(hash, plain string) bool
+}
+
+type PasswordResetRepository interface {
+	Create(ctx context.Context, reset domain.PasswordResetCode) error
+	GetActiveByUserIDAndCodeHash(ctx context.Context, userID uuid.UUID, codeHash string, now time.Time) (domain.PasswordResetCode, bool, error)
+	InvalidateActiveByUserID(ctx context.Context, userID uuid.UUID, when time.Time) error
+	MarkUsed(ctx context.Context, resetID uuid.UUID, when time.Time) error
+}
+
+type PasswordResetCodeSender interface {
+	SendPasswordResetCode(ctx context.Context, email, code string) error
 }

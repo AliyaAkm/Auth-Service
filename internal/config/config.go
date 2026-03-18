@@ -23,10 +23,21 @@ type JWTConfig struct {
 	RefreshTTL time.Duration `env:"REFRESH_TTL"`
 }
 
+type SMTPConfig struct {
+	Host                 string `env:"HOST"`
+	Port                 int    `env:"PORT"`
+	Username             string `env:"USERNAME"`
+	Password             string `env:"PASSWORD"`
+	FromEmail            string `env:"FROM_EMAIL"`
+	FromName             string `env:"FROM_NAME" envDefault:"Zerde Study"`
+	PasswordResetSubject string `env:"PASSWORD_RESET_SUBJECT" envDefault:"Password reset code"`
+}
+
 type Config struct {
-	HTTPAddr string    `env:"HTTP_ADDR"`
-	DB       DbConfig  `envPrefix:"DB_"`
-	JWT      JWTConfig `envPrefix:"JWT_"`
+	HTTPAddr string     `env:"HTTP_ADDR"`
+	DB       DbConfig   `envPrefix:"DB_"`
+	JWT      JWTConfig  `envPrefix:"JWT_"`
+	SMTP     SMTPConfig `envPrefix:"SMTP_"`
 }
 
 func ReadEnv() (*Config, error) {

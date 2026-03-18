@@ -6,6 +6,7 @@ var (
 	ErrEmailTaken          = errors.New("email already in use")
 	ErrValidation          = errors.New("validation error")
 	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrInvalidResetCode    = errors.New("invalid or expired password reset code")
 	ErrInactiveUser        = errors.New("user inactive")
 	ErrInvalidToken        = errors.New("token inactive")
 	ErrSessionRevoked      = errors.New("refresh session revoked")
