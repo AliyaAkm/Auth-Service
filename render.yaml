@@ -1,0 +1,43 @@
+databases:
+  - name: auth-db
+    plan: starter
+
+services:
+  - type: pserv
+    name: auth-service
+    runtime: go
+    plan: starter
+    autoDeployTrigger: commit
+    buildCommand: go build -o bin/auth ./cmd/auth
+    startCommand: ./bin/auth
+    envVars:
+      - key: HTTP_ADDR
+        value: :8080
+      - key: DB_URL
+        fromDatabase:
+          name: auth-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ISSUER
+        value: auth-service
+      - key: JWT_AUDIENCE
+        value: edu-platform
+      - key: JWT_ACCESS_TTL
+        value: 15m
+      - key: JWT_REFRESH_TTL
+        value: 720h
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: Zerde Study
+      - key: SMTP_PASSWORD_RESET_SUBJECT
+        value: Password reset code

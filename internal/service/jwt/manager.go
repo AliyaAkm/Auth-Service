@@ -96,7 +96,6 @@ func normalizeRoleClaims(primaryRole string, roles []string) []string {
 	normalized := make([]string, 0, len(roles)+1)
 
 	add := func(role string) {
-		role = domain.NormalizeRoleCode(role)
 		if role == "" || !domain.IsValidRoleCode(role) {
 			return
 		}

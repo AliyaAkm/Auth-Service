@@ -50,18 +50,10 @@ func Authenticate(jwtMgr *jwtlib.Manager) gin.HandlerFunc {
 }
 
 func RequireRole(requiredRoles ...string) gin.HandlerFunc {
-	normalizedAllowed := make([]string, 0, len(requiredRoles))
-	for _, role := range requiredRoles {
-		role = domain.NormalizeRoleCode(role)
-		if role != "" {
-			normalizedAllowed = append(normalizedAllowed, role)
-		}
-	}
-
 	return func(c *gin.Context) {
 		currentRoles := CurrentRoles(c)
 		for _, currentRole := range currentRoles {
-			for _, allowedRole := range normalizedAllowed {
+			for _, allowedRole := range requiredRoles {
 				if currentRole == allowedRole {
 					c.Next()
 					return
@@ -81,6 +73,10 @@ func CurrentUserID(c *gin.Context) (uuid.UUID, bool) {
 	}
 
 	userID, ok := value.(uuid.UUID)
+	if !ok {
+		return uuid.UUID{}, false
+	}
+
 	return userID, ok
 }
 

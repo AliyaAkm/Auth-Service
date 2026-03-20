@@ -3,7 +3,6 @@ package domain
 import (
 	"github.com/google/uuid"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -32,23 +31,15 @@ type Role struct {
 	CreatedAt    time.Time
 }
 
-func NormalizeRoleCode(code string) string {
-	return strings.ToLower(strings.TrimSpace(code))
-}
-
 func IsValidRoleCode(code string) bool {
-	_, ok := rolePriority[NormalizeRoleCode(code)]
+	_, ok := rolePriority[code]
 	return ok
-}
-
-func RoleCodes() []string {
-	return []string{RoleStudent, RoleTeacher, RoleManager, RoleAdmin}
 }
 
 func RoleCodesFromRoles(roles []Role) []string {
 	codes := make([]string, 0, len(roles))
 	for _, role := range roles {
-		code := NormalizeRoleCode(role.Code)
+		code := role.Code
 		if code == "" || slices.Contains(codes, code) {
 			continue
 		}
@@ -58,9 +49,8 @@ func RoleCodesFromRoles(roles []Role) []string {
 }
 
 func HasRole(roles []Role, want string) bool {
-	want = NormalizeRoleCode(want)
 	for _, role := range roles {
-		if NormalizeRoleCode(role.Code) == want {
+		if role.Code == want {
 			return true
 		}
 	}
@@ -72,7 +62,7 @@ func PrimaryRoleCode(roles []Role) string {
 	maxPriority := -1
 
 	for _, role := range roles {
-		code := NormalizeRoleCode(role.Code)
+		code := role.Code
 		priority, ok := rolePriority[code]
 		if !ok {
 			continue
@@ -91,8 +81,6 @@ func CanViewOtherUsersRoles(roles []Role) bool {
 }
 
 func CanManageRole(roles []Role, targetRole string) bool {
-	targetRole = NormalizeRoleCode(targetRole)
-
 	switch {
 	case HasRole(roles, RoleAdmin):
 		return IsValidRoleCode(targetRole)

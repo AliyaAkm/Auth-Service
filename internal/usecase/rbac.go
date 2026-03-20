@@ -119,7 +119,7 @@ func (r *RBAC) RevokeRole(ctx context.Context, actorUserID, targetUserID, roleID
 		return nil, domain.ErrUserMustHaveRole
 	}
 
-	if domain.NormalizeRoleCode(role.Code) == domain.RoleAdmin {
+	if role.Code == domain.RoleAdmin {
 		adminsCount, err := r.users.CountUsersByRole(ctx, domain.RoleAdmin)
 		if err != nil {
 			return nil, err

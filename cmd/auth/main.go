@@ -86,13 +86,13 @@ func main() {
 	engine := router.New(authH, rbacH, jwtMgr)
 
 	srv := &http.Server{
-		Addr:              cfg.HTTPAddr,
+		Addr:              cfg.ListenAddr(),
 		Handler:           engine,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	go func() {
-		log.Println("auth-service started on", cfg.HTTPAddr)
+		log.Println("auth-service started on", cfg.ListenAddr())
 		if err := srv.ListenAndServe(); err != nil && errors.Is(http.ErrServerClosed, err) {
 			log.Println("server error:", err)
 		}

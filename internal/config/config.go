@@ -2,17 +2,21 @@ package config
 
 import (
 	"fmt"
+	"net"
+	"os"
+	"strings"
 	"github.com/caarlos0/env/v11"
 	"time"
 )
 
 type DbConfig struct {
-	Host     string `env:"HOST"`
-	Port     int    `env:"PORT"`
-	User     string `env:"USER"`
-	Password string `env:"PASSWORD"`
-	DBName   string `env:"NAME"`
-	SSLMode  string `env:"SSLMODE"`
+	URL      string `env:"URL" envDefault:""`
+	Host     string `env:"HOST" envDefault:""`
+	Port     int    `env:"PORT" envDefault:"0"`
+	User     string `env:"USER" envDefault:""`
+	Password string `env:"PASSWORD" envDefault:""`
+	DBName   string `env:"NAME" envDefault:""`
+	SSLMode  string `env:"SSLMODE" envDefault:"disable"`
 }
 
 type JWTConfig struct {
@@ -48,11 +52,46 @@ func ReadEnv() (*Config, error) {
 	if err := env.ParseWithOptions(cfg, opts); err != nil {
 		return nil, err
 	}
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
 	return cfg, nil
 }
 
 func (c Config) DatabaseURL() string {
+	if strings.TrimSpace(c.DB.URL) != "" {
+		return strings.TrimSpace(c.DB.URL)
+	}
+
 	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		c.DB.User, c.DB.Password, c.DB.Host, c.DB.Port, c.DB.DBName, c.DB.SSLMode,
 	)
+}
+
+func (c Config) ListenAddr() string {
+	port := strings.TrimSpace(os.Getenv("PORT"))
+	if port == "" {
+		return c.HTTPAddr
+	}
+
+	return net.JoinHostPort("", port)
+}
+
+func (c Config) validate() error {
+	if strings.TrimSpace(c.DB.URL) == "" {
+		switch {
+		case strings.TrimSpace(c.DB.Host) == "":
+			return fmt.Errorf("DB_HOST is required when DB_URL is empty")
+		case c.DB.Port == 0:
+			return fmt.Errorf("DB_PORT is required when DB_URL is empty")
+		case strings.TrimSpace(c.DB.User) == "":
+			return fmt.Errorf("DB_USER is required when DB_URL is empty")
+		case strings.TrimSpace(c.DB.Password) == "":
+			return fmt.Errorf("DB_PASSWORD is required when DB_URL is empty")
+		case strings.TrimSpace(c.DB.DBName) == "":
+			return fmt.Errorf("DB_NAME is required when DB_URL is empty")
+		}
+	}
+
+	return nil
 }

@@ -37,6 +37,7 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 	usersGroup.Use(middleware.Authenticate(jwtMgr), middleware.RequireRole(RoleAdmin, RoleManager))
 	{
 		usersGroup.GET("/", rbacH.ListUsers)
+
 		usersGroup.PATCH("/status", rbacH.UpdateUserStatus)
 	}
 

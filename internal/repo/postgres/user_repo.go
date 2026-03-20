@@ -56,7 +56,7 @@ func (r *UserRepo) CreateWithRoles(ctx context.Context, u domain.User, roleCodes
 			return domain.ErrRoleNotFound
 		}
 
-		normalizedCode := domain.NormalizeRoleCode(role.Code)
+		normalizedCode := role.Code
 		if _, exists := seen[normalizedCode]; exists {
 			continue
 		}
@@ -290,7 +290,7 @@ func (r *UserRepo) CountUsersByRole(ctx context.Context, roleCode string) (int, 
 		FROM user_roles ur
 		INNER JOIN roles r ON r.id = ur.role_id
 		WHERE r.code = $1
-	`, domain.NormalizeRoleCode(roleCode)).Scan(&count)
+	`, roleCode).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -306,7 +306,7 @@ func (r *UserRepo) CountActiveUsersByRole(ctx context.Context, roleCode string) 
 		INNER JOIN roles r ON r.id = ur.role_id
 		INNER JOIN users u ON u.id = ur.user_id
 		WHERE r.code = $1 AND u.is_active = TRUE
-	`, domain.NormalizeRoleCode(roleCode)).Scan(&count)
+	`, roleCode).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -320,7 +320,7 @@ func (r *UserRepo) getRoleByCode(ctx context.Context, db queryer, code string) (
 		SELECT id, code, name, description, is_default, is_privileged, is_support, created_at
 		FROM roles
 		WHERE code = $1
-	`, domain.NormalizeRoleCode(code)).Scan(
+	`, code).Scan(
 		&role.ID,
 		&role.Code,
 		&role.Name,
