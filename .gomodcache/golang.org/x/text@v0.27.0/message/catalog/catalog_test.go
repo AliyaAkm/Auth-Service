@@ -35,7 +35,7 @@ type testCase struct {
 }
 
 var testCases = []testCase{{
-	desc: "empty catalog",
+	desc: "empty course",
 	lookup: []entry{
 		{"en", "key", ""},
 		{"en", "", ""},

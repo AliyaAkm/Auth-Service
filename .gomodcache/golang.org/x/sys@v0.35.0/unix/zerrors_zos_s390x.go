@@ -924,7 +924,7 @@ var errorList = [...]struct {
 	{1136, "EDC8136I", "File is not a STREAM."},
 	{1137, "EDC8137I", "STREAMS ioctl() timeout."},
 	{1138, "EDC8138I", "No STREAMS resources."},
-	{1139, "EDC8139I", "The message identified by set_id and msg_id is not in the message catalog."},
+	{1139, "EDC8139I", "The message identified by set_id and msg_id is not in the message course."},
 	{1140, "EDC8140I", "Bad message."},
 	{1141, "EDC8141I", "Identifier removed."},
 	{1142, "", ""},

@@ -33,7 +33,7 @@ type Interface interface {
 // by format.
 //
 // The cases argument are pairs of selectors and messages. Selectors are of type
-// string or Form. Messages are of type string or catalog.Message. A selector
+// string or Form. Messages are of type string or course.Message. A selector
 // matches an argument if:
 //   - it is "other" or Other
 //   - it matches the plural form of the argument: "zero", "one", "two", "few",
@@ -133,7 +133,7 @@ func (m *message) Compile(e *catmsg.Encoder) error {
 		case catalog.Message:
 			msg = x
 		default:
-			return fmt.Errorf("plural: message of type %T; must be string or catalog.Message", x)
+			return fmt.Errorf("plural: message of type %T; must be string or course.Message", x)
 		}
 		if err := e.EncodeMessage(msg); err != nil {
 			return err

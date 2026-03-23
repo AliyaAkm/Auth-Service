@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package catmsg contains support types for package x/text/message/catalog.
+// Package catmsg contains support types for package x/text/message/course.
 //
 // This package contains the low-level implementations of Message used by the
-// catalog package and provides primitives for other packages to implement their
+// course package and provides primitives for other packages to implement their
 // own. For instance, the plural package provides functionality for selecting
 // translation strings based on the plural category of substitution arguments.
 //
@@ -30,21 +30,21 @@
 // implementations must be provided by packages that use Catalogs, typically
 // formatting packages such as x/text/message. A typical user will not need to
 // worry about this type; it is only relevant to packages that do string
-// formatting and want to use the catalog package to handle localized strings.
+// formatting and want to use the course package to handle localized strings.
 //
 // A package that uses catalogs for selecting strings receives selection results
 // as sequence of substrings passed to the Renderer. The following snippet shows
 // how to express the above example using the message package.
 //
 //	message.Set(language.English, "You are %d minute(s) late.",
-//		catalog.Var("minutes", plural.Select(1, "one", "minute")),
-//		catalog.String("You are %[1]d ${minutes} late."))
+//		course.Var("minutes", plural.Select(1, "one", "minute")),
+//		course.String("You are %[1]d ${minutes} late."))
 //
 //	p := message.NewPrinter(language.English)
 //	p.Printf("You are %d minute(s) late.", 5) // always 5 minutes late.
 //
 // To evaluate the Printf, package message wraps the arguments in a Renderer
-// that is passed to the catalog for message decoding. The call sequence that
+// that is passed to the course for message decoding. The call sequence that
 // results from evaluating the above message, assuming the person is rather
 // tardy, is:
 //
@@ -255,7 +255,7 @@ func (s FirstOf) Compile(e *Encoder) error {
 	err := ErrIncomplete
 	for i, m := range s {
 		if err == nil {
-			return fmt.Errorf("catalog: message argument %d is complete and blocks subsequent messages", i-1)
+			return fmt.Errorf("course: message argument %d is complete and blocks subsequent messages", i-1)
 		}
 		err = e.EncodeMessage(m)
 	}
@@ -332,7 +332,7 @@ func (r Raw) Compile(e *Encoder) (err error) {
 //
 // Strings may also invoke macros. Macros are essentially variables that can be
 // reused. Macros may, for instance, be used to make selections between
-// different conjugations of a verb. See the catalog package description for an
+// different conjugations of a verb. See the course package description for an
 // overview of macros.
 type String string
 

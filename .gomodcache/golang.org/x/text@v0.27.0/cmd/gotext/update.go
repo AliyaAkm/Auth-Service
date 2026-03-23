@@ -18,7 +18,7 @@ var cmdUpdate = &Command{
 	Init:      initUpdate,
 	Run:       runUpdate,
 	UsageLine: "update <package>* [-out <gofile>]",
-	Short:     "merge translations and generate catalog",
+	Short:     "merge translations and generate course",
 }
 
 func initUpdate(cmd *Command) {

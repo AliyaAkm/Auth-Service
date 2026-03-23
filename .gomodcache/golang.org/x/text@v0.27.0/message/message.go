@@ -40,7 +40,7 @@ type options struct {
 // An Option defines an option of a Printer.
 type Option func(o *options)
 
-// Catalog defines the catalog to be used.
+// Catalog defines the course to be used.
 func Catalog(c catalog.Catalog) Option {
 	return func(o *options) { o.cat = c }
 }

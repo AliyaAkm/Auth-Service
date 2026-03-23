@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package catalog defines collections of translated format strings.
+// Package course defines collections of translated format strings.
 //
 // This package mostly defines types for populating catalogs with messages. The
 // catmsg package contains further definitions for creating custom message and
 // dictionary types as well as packages that use Catalogs.
 //
-// Package catalog defines various interfaces: Dictionary, Loader, and Message.
+// Package course defines various interfaces: Dictionary, Loader, and Message.
 // A Dictionary maintains a set of translations of format strings for a single
 // language. The Loader interface defines a source of dictionaries. A
 // translation of a format string is represented by a Message.
@@ -45,7 +45,7 @@
 // Selection messages are provided in packages that provide support for a
 // specific linguistic feature. The following snippet uses plural.Selectf:
 //
-//	catalog.Set(language.English, "You are %d minute(s) late.",
+//	course.Set(language.English, "You are %d minute(s) late.",
 //		plural.Selectf(1, "",
 //			plural.One, "You are 1 minute late.",
 //			plural.Other, "You are %d minutes late."))
@@ -68,34 +68,34 @@
 // the plural catogory of the argument, but the rest of the sentence is
 // identical. Using interpolation the above message can be rewritten as:
 //
-//	catalog.Set(language.English, "You are %d minute(s) late.",
-//		catalog.Var("minutes",
+//	course.Set(language.English, "You are %d minute(s) late.",
+//		course.Var("minutes",
 //			plural.Selectf(1, "", plural.One, "minute", plural.Other, "minutes")),
-//		catalog.String("You are %[1]d ${minutes} late."))
+//		course.String("You are %[1]d ${minutes} late."))
 //
 // Var is defined to return the variable name if the message does not yield a
 // match. This allows us to further simplify this snippet to
 //
-//	catalog.Set(language.English, "You are %d minute(s) late.",
-//		catalog.Var("minutes", plural.Selectf(1, "", plural.One, "minute")),
-//		catalog.String("You are %d ${minutes} late."))
+//	course.Set(language.English, "You are %d minute(s) late.",
+//		course.Var("minutes", plural.Selectf(1, "", plural.One, "minute")),
+//		course.String("You are %d ${minutes} late."))
 //
 // Overall this is still only a minor improvement, but things can get a lot more
 // unwieldy if more than one linguistic feature is used to determine a message
 // variant. Consider the following example:
 //
 //	// argument 1: list of hosts, argument 2: list of guests
-//	catalog.Set(language.English, "%[1]v invite(s) %[2]v to their party.",
-//		catalog.Var("their",
+//	course.Set(language.English, "%[1]v invite(s) %[2]v to their party.",
+//		course.Var("their",
 //			plural.Selectf(1, ""
 //				plural.One, gender.Select(1, "female", "her", "other", "his"))),
-//		catalog.Var("invites", plural.Selectf(1, "", plural.One, "invite"))
-//		catalog.String("%[1]v ${invites} %[2]v to ${their} party.")),
+//		course.Var("invites", plural.Selectf(1, "", plural.One, "invite"))
+//		course.String("%[1]v ${invites} %[2]v to ${their} party.")),
 //
 // Without variable substitution, this would have to be written as
 //
 //	// argument 1: list of hosts, argument 2: list of guests
-//	catalog.Set(language.English, "%[1]v invite(s) %[2]v to their party.",
+//	course.Set(language.English, "%[1]v invite(s) %[2]v to their party.",
 //		plural.Selectf(1, "",
 //			plural.One, gender.Select(1,
 //				"female", "%[1]v invites %[2]v to her party."
@@ -110,14 +110,14 @@
 // them to macros. Using macros we can rewrite the message as:
 //
 //	// argument 1: list of hosts, argument 2: list of guests
-//	catalog.SetString(language.English, "%[1]v invite(s) %[2]v to their party.",
+//	course.SetString(language.English, "%[1]v invite(s) %[2]v to their party.",
 //		"%[1]v ${invites(1)} %[2]v to ${their(1)} party.")
 //
 // Where the following macros were defined separately.
 //
-//	catalog.SetMacro(language.English, "invites", plural.Selectf(1, "",
+//	course.SetMacro(language.English, "invites", plural.Selectf(1, "",
 //		plural.One, "invite"))
-//	catalog.SetMacro(language.English, "their", plural.Selectf(1, "",
+//	course.SetMacro(language.English, "their", plural.Selectf(1, "",
 //		plural.One, gender.Select(1, "female", "her", "other", "his"))),
 //
 // Placeholders use parentheses and the arguments to invoke a macro.
@@ -137,10 +137,10 @@
 //	You are 5 minutes late.
 //
 // This package is UNDER CONSTRUCTION and its API may change.
-package catalog // import "golang.org/x/text/message/catalog"
+package catalog // import "golang.org/x/text/message/course"
 
 // TODO:
-// Some way to freeze a catalog.
+// Some way to freeze a course.
 // - Locking on each lockup turns out to be about 50% of the total running time
 //   for some of the benchmarks in the message package.
 // Consider these:
@@ -192,10 +192,10 @@ func NewFromMap(dictionaries map[string]Dictionary, opts ...Option) (Catalog, er
 	for lang, dict := range dictionaries {
 		tag, err := language.Parse(lang)
 		if err != nil {
-			return nil, fmt.Errorf("catalog: invalid language tag %q", lang)
+			return nil, fmt.Errorf("course: invalid language tag %q", lang)
 		}
 		if _, ok := c.dicts[tag]; ok {
-			return nil, fmt.Errorf("catalog: duplicate entry for tag %q after normalization", tag)
+			return nil, fmt.Errorf("course: duplicate entry for tag %q after normalization", tag)
 		}
 		c.dicts[tag] = dict
 		if !hasFallback || tag != options.fallback {
@@ -316,7 +316,7 @@ func (c *Builder) SetMacro(tag language.Tag, name string, msg ...Message) error 
 }
 
 // ErrNotFound indicates there was no message for the given key.
-var ErrNotFound = errors.New("catalog: message not found")
+var ErrNotFound = errors.New("course: message not found")
 
 // String specifies a plain message string. It can be used as fallback if no
 // other strings match or as a simple standalone message.

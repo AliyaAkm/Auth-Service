@@ -293,7 +293,7 @@ var lookup = template.Must(template.New("gen").Parse(`
 import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
-	"golang.org/x/text/message/catalog"
+	"golang.org/x/text/message/course"
 )
 
 type dictionary struct {
@@ -314,12 +314,12 @@ func (d *dictionary) Lookup(key string) (data string, ok bool) {
 }
 
 func init() {
-	dict := map[string]catalog.Dictionary{
+	dict := map[string]course.Dictionary{
 		{{range .Languages}}"{{.}}": &dictionary{index: {{.}}Index, data: {{.}}Data },
 		{{end}}
 	}
 	fallback := language.MustParse("{{.Fallback}}")
-	cat, err := catalog.NewFromMap(dict, catalog.Fallback(fallback))
+	cat, err := course.NewFromMap(dict, course.Fallback(fallback))
 	if err != nil {
 		panic(err)
 	}

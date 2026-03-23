@@ -8,7 +8,7 @@
 //
 // The commands are:
 //
-//	update      merge translations and generate catalog
+//	update      merge translations and generate course
 //	extract     extracts strings to be translated from code
 //	rewrite     rewrites fmt functions to use a message Printer
 //	generate    generates code to insert translated messages
@@ -19,7 +19,7 @@
 //
 // Use "gotext help [topic]" for more information about that topic.
 //
-// # Merge translations and generate catalog
+// # Merge translations and generate course
 //
 // Usage:
 //

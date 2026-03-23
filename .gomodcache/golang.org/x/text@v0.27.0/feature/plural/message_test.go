@@ -138,7 +138,7 @@ func TestSelect(t *testing.T) {
 		msg:  Selectf(1, "%d", "", "foo"),
 	}, {
 		desc: "error invalid message",
-		err:  `message of type int; must be string or catalog.Message`,
+		err:  `message of type int; must be string or course.Message`,
 		msg:  Selectf(1, "%d", "one", 3),
 	}, {
 		desc: "nested error",
