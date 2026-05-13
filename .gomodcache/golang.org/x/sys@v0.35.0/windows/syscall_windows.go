@@ -233,7 +233,7 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	GetTempPath(buflen uint32, buf *uint16) (n uint32, err error) = GetTempPathW
 //sys	CreatePipe(readhandle *Handle, writehandle *Handle, sa *SecurityAttributes, size uint32) (err error)
 //sys	GetFileType(filehandle Handle) (n uint32, err error)
-//sys	CryptAcquireContext(provhandle *Handle, container *uint16, provider *uint16, provtype uint32, flags uint32) (err error) = advapi32.CryptAcquireContextW
+//sys	CryptAcquireContext(provhandle *Handle, container *uint16, paymentmethod *uint16, provtype uint32, flags uint32) (err error) = advapi32.CryptAcquireContextW
 //sys	CryptReleaseContext(provhandle Handle, flags uint32) (err error) = advapi32.CryptReleaseContext
 //sys	CryptGenRandom(provhandle Handle, buflen uint32, buf *byte) (err error) = advapi32.CryptGenRandom
 //sys	GetEnvironmentStrings() (envs *uint16, err error) [failretval==nil] = kernel32.GetEnvironmentStringsW

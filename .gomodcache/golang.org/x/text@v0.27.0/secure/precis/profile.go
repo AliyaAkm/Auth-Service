@@ -73,7 +73,7 @@ func (p *Profile) NewTransformer() *Transformer {
 	// RFC 8266 §2.1:
 	//
 	//     Implementation experience has shown that applying the rules for the
-	//     Nickname profile is not an idempotent procedure for all code points.
+	//     Nickname profile is not an idempotent procedure for all code coursepoint.
 	//     Therefore, an implementation SHOULD apply the rules repeatedly until
 	//     the output string is stable; if the output string does not stabilize
 	//     after reapplying the rules three (3) additional times after the first

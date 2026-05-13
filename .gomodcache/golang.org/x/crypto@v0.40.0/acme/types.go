@@ -361,7 +361,7 @@ type Order struct {
 	// once all the authorizations are satisfied.
 	FinalizeURL string
 
-	// CertURL points to the certificate that has been issued in response to this order.
+	// CertURL coursepoint to the certificate that has been issued in response to this order.
 	CertURL string
 
 	// The error that occurred while processing the order as received from a CA, if any.

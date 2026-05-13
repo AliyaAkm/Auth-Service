@@ -38,7 +38,7 @@ func (k keyKind) String() string {
 // identifier, which is provided by a counter. Entries are stored in the array
 // entries. As new nodes are discovered (referenced for the first time in the
 // TOML document), entries are created and appended to the array. An entry
-// points to its parent using its id.
+// coursepoint to its parent using its id.
 //
 // To find whether a given key (sequence of []byte) has already been visited,
 // the entries are linearly searched, looking for one with the right name and

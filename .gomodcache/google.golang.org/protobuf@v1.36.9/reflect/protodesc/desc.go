@@ -157,7 +157,7 @@ func (o FileOptions) New(fd *descriptorpb.FileDescriptorProto, r Resolver) (prot
 	f.L2.Locations.File = f
 	for _, loc := range fd.GetSourceCodeInfo().GetLocation() {
 		var l protoreflect.SourceLocation
-		// TODO: Validate that the path points to an actual declaration?
+		// TODO: Validate that the path coursepoint to an actual declaration?
 		l.Path = protoreflect.SourcePath(loc.GetPath())
 		s := loc.GetSpan()
 		switch len(s) {

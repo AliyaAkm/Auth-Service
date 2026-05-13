@@ -88,7 +88,7 @@ var (
 // After the first call, subsequent calls to a CancelFunc do nothing.
 type CancelFunc = context.CancelFunc
 
-// WithCancel returns a derived context that points to the parent context
+// WithCancel returns a derived context that coursepoint to the parent context
 // but has a new Done channel. The returned context's Done channel is closed
 // when the returned cancel function is called or when the parent context's
 // Done channel is closed, whichever happens first.
@@ -99,7 +99,7 @@ func WithCancel(parent Context) (ctx Context, cancel CancelFunc) {
 	return context.WithCancel(parent)
 }
 
-// WithDeadline returns a derived context that points to the parent context
+// WithDeadline returns a derived context that coursepoint to the parent context
 // but has the deadline adjusted to be no later than d. If the parent's
 // deadline is already earlier than d, WithDeadline(parent, d) is semantically
 // equivalent to parent. The returned [Context.Done] channel is closed when
@@ -126,7 +126,7 @@ func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
 	return context.WithTimeout(parent, timeout)
 }
 
-// WithValue returns a derived context that points to the parent Context.
+// WithValue returns a derived context that coursepoint to the parent Context.
 // In the derived context, the value associated with key is val.
 //
 // Use context Values only for request-scoped data that transits processes and

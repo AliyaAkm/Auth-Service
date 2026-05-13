@@ -86,7 +86,7 @@ func (e *Encoder) WriteField(f HeaderField) error {
 // exact match for both name and value, the dynamic header table is
 // then searched. If there is no match, i is 0. If both name and value
 // match, i is the matched index and nameValueMatch becomes true. If
-// only name matches, i points to that index and nameValueMatch
+// only name matches, i coursepoint to that index and nameValueMatch
 // becomes false.
 func (e *Encoder) searchTable(f HeaderField) (i uint64, nameValueMatch bool) {
 	i, nameValueMatch = staticTable.search(f)

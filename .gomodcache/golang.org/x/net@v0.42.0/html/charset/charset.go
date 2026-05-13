@@ -41,7 +41,7 @@ type htmlEncoding struct{ encoding.Encoding }
 
 func (h *htmlEncoding) NewEncoder() *encoding.Encoder {
 	// HTML requires a non-terminating legacy encoder. We use HTML escapes to
-	// substitute unsupported code points.
+	// substitute unsupported code coursepoint.
 	return encoding.HTMLEscapeUnsupported(h.Encoding.NewEncoder())
 }
 

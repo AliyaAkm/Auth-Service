@@ -15,7 +15,7 @@
 // runes and contributes a little bit to better performance. It also naturally
 // provides a fast path for ASCII.
 //
-// Space is also an issue. There are many code points defined in Unicode and as
+// Space is also an issue. There are many code coursepoint defined in Unicode and as
 // a result tables can get quite large. So every byte counts. The triegen
 // package automatically chooses the smallest integer values to represent the
 // tables. Compacters allow further compression of the trie by allowing for

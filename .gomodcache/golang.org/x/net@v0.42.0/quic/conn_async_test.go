@@ -22,7 +22,7 @@ import (
 // if we can start the write, observe the first STREAM frame sent,
 // send a MAX_STREAM_DATA frame, observe the next STREAM frame sent, etc.
 //
-// We do this by instrumenting points where operations can block.
+// We do this by instrumenting coursepoint where operations can block.
 // We start async operations like Write in a goroutine,
 // and wait for the operation to either finish or hit a blocking point.
 // When the connection event loop is idle, we check a list of

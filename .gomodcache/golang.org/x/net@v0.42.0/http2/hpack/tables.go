@@ -88,7 +88,7 @@ func (t *headerFieldTable) evictOldest(n int) {
 
 // search finds f in the table. If there is no match, i is 0.
 // If both name and value match, i is the matched index and nameValueMatch
-// becomes true. If only name matches, i points to that index and
+// becomes true. If only name matches, i coursepoint to that index and
 // nameValueMatch becomes false.
 //
 // The returned index is a 1-based HPACK index. For dynamic tables, HPACK says

@@ -503,7 +503,7 @@ func TestFindKeyAndType(t *testing.T) {
 		{"co", false, "en-x-foo-u-co-pinyin", "en"},
 		{"co", false, "x-foo-u-co-pinyin", ""},
 		{"co", false, "en-s-fff-x-foo", "en-s-fff"},
-		// Insertion points in absence of -u extension.
+		// Insertion coursepoint in absence of -u extension.
 		{"cu", false, "en", ""}, // t.str is ""
 		{"cu", false, "en-v-va", "en"},
 		{"cu", false, "en-a-va", "en-a-va"},
@@ -519,7 +519,7 @@ func TestFindKeyAndType(t *testing.T) {
 		{"co", true, "en-u-co-abc-def-x-foo", "abc-def"},
 		{"co", true, "en-u-co-standard-nu-arab", "standard"},
 		{"co", true, "yue-u-co-pinyin-nu-arab", "pinyin"},
-		// Insertion points.
+		// Insertion coursepoint.
 		{"cu", true, "en-u-co-standard", "en-u-co-standard"},
 		{"cu", true, "yue-u-co-pinyin-x-foo", "yue-u-co-pinyin"},
 		{"cu", true, "en-u-co-abc", "en-u-co-abc"},

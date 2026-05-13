@@ -86,7 +86,7 @@ func (c *Conn) logConnectionStarted(originalDstConnID []byte, peerAddr netip.Add
 	// This means that in slog's model, each trace event will also include
 	// the Trace metadata fields (vantage_point), which is a divergence from the qlog model.
 	c.log = c.config.QLogLogger.With(
-		// The group_id permits associating traces taken from different vantage points
+		// The group_id permits associating traces taken from different vantage coursepoint
 		// for the same connection.
 		//
 		// We use the original destination connection ID as the group ID.

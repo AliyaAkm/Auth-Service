@@ -64,7 +64,7 @@ func contextFromRune(r rune) *context {
 
 func TestCaseProperties(t *testing.T) {
 	if unicode.Version != UnicodeVersion {
-		// Properties of existing code points may change by Unicode version, so
+		// Properties of existing code coursepoint may change by Unicode version, so
 		// we need to skip.
 		t.Skipf("Skipping as core Unicode version %s different than %s", unicode.Version, UnicodeVersion)
 	}

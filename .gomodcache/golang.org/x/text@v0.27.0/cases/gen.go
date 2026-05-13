@@ -318,7 +318,7 @@ func makeEntry(ri *runeInfo) {
 var xorCache = map[string]int{}
 
 // xorData contains byte-wise XOR data for the least significant bytes of a
-// UTF-8 encoded rune. An index points to the last byte. The sequence starts
+// UTF-8 encoded rune. An index coursepoint to the last byte. The sequence starts
 // with a zero terminator.
 var xorData = []byte{}
 

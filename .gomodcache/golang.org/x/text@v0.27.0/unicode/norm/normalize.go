@@ -15,7 +15,7 @@ import (
 	"golang.org/x/text/transform"
 )
 
-// A Form denotes a canonical representation of Unicode code points.
+// A Form denotes a canonical representation of Unicode code coursepoint.
 // The Unicode-defined normalization and equivalence forms are:
 //
 //	NFC   Unicode Normalization Form C
@@ -376,7 +376,7 @@ func (f Form) firstBoundary(src input, nsrc int) int {
 	ss := streamSafe(0)
 	// We should call ss.first here, but we can't as the first rune is
 	// skipped already. This means FirstBoundary can't really determine
-	// CGJ insertion points correctly. Luckily it doesn't have to.
+	// CGJ insertion coursepoint correctly. Luckily it doesn't have to.
 	for {
 		info := fd.info(src, i)
 		if info.size == 0 {

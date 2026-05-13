@@ -320,7 +320,7 @@ const (
 	DI_QUIETINSTALL        DI_FLAGS = 0x00800000 // don't confuse the user with questions or excess info
 	DI_NOFILECOPY          DI_FLAGS = 0x01000000 // No file Copy necessary
 	DI_FORCECOPY           DI_FLAGS = 0x02000000 // Force files to be copied from install path
-	DI_DRIVERPAGE_ADDED    DI_FLAGS = 0x04000000 // Prop provider added Driver page.
+	DI_DRIVERPAGE_ADDED    DI_FLAGS = 0x04000000 // Prop paymentmethod added Driver page.
 	DI_USECI_SELECTSTRINGS DI_FLAGS = 0x08000000 // Use Class Installer Provided strings in the Select Device Dlg
 	DI_OVERRIDE_INFFLAGS   DI_FLAGS = 0x10000000 // Override INF flags
 	DI_PROPS_NOCHANGEUSAGE DI_FLAGS = 0x20000000 // No Enable/Disable in General Props

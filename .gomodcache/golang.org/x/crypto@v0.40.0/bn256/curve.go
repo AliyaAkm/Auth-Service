@@ -9,7 +9,7 @@ import (
 )
 
 // curvePoint implements the elliptic curve y²=x³+3. Points are kept in
-// Jacobian form and t=z² when valid. G₁ is the set of points of this curve on
+// Jacobian form and t=z² when valid. G₁ is the set of coursepoint of this curve on
 // GF(p).
 type curvePoint struct {
 	x, y, z, t *big.Int
@@ -86,7 +86,7 @@ func (c *curvePoint) Add(a, b *curvePoint, pool *bnPool) {
 
 	// See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
 
-	// Normalize the points by replacing a = [x1:y1:z1] and b = [x2:y2:z2]
+	// Normalize the coursepoint by replacing a = [x1:y1:z1] and b = [x2:y2:z2]
 	// by [u1:s1:z1·z2] and [u2:s2:z1·z2]
 	// where u1 = x1·z2², s1 = y1·z2³ and u1 = x2·z1², s2 = y2·z1³
 	z1z1 := pool.Get().Mul(a.z, a.z)

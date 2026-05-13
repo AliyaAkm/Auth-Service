@@ -120,7 +120,7 @@ var (
 	mappings = []byte{}
 
 	// mappingIndex contains an offset in mappingBytes representing the start
-	// of a mapping. Then next entry in mappingIndex points past the end of the
+	// of a mapping. Then next entry in mappingIndex coursepoint past the end of the
 	// string.
 	mappingIndex = []uint16{0}
 	mapCache     = map[string]int{}

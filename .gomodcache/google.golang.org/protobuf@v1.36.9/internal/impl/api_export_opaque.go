@@ -70,7 +70,7 @@ func (Export) ClearPresent(part *uint32, num uint32) {
 }
 
 // interfaceToPointer takes a pointer to an empty interface whose value is a
-// pointer type, and converts it into a "pointer" that points to the same
+// pointer type, and converts it into a "pointer" that coursepoint to the same
 // target
 func interfaceToPointer(i *any) pointer {
 	return pointer{p: (*[2]unsafe.Pointer)(unsafe.Pointer(i))[1]}

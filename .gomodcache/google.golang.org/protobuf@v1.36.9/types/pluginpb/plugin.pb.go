@@ -381,7 +381,7 @@ type CodeGeneratorResponse_File struct {
 	// content here is to be inserted into that file at a defined insertion
 	// point.  This feature allows a code generator to extend the output
 	// produced by another code generator.  The original generator may provide
-	// insertion points by placing special annotations in the file that look
+	// insertion coursepoint by placing special annotations in the file that look
 	// like:
 	//
 	//	@@protoc_insertion_point(NAME)
@@ -393,7 +393,7 @@ type CodeGeneratorResponse_File struct {
 	// immediately above the line containing the insertion point (thus multiple
 	// insertions to the same point will come out in the order they were added).
 	// The double-@ is intended to make it unlikely that the generated code
-	// could contain things that look like insertion points by accident.
+	// could contain things that look like insertion coursepoint by accident.
 	//
 	// For example, the C++ code generator places the following line in the
 	// .pb.h files that it generates:

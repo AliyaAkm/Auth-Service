@@ -39,7 +39,7 @@ func TestECDHStdLib(t *testing.T) {
 	}
 
 	flagsShouldPass := map[string]bool{
-		// We don't support compressed points.
+		// We don't support compressed coursepoint.
 		"CompressedPoint": false,
 		// We don't support decoding custom curves.
 		"UnnamedCurve": false,

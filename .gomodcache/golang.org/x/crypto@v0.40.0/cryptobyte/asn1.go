@@ -695,7 +695,7 @@ func (s *String) ReadOptionalASN1Integer(out interface{}, tag asn1.Tag, defaultV
 			if defaultValue, ok := defaultValue.(*big.Int); ok {
 				out.(*big.Int).Set(defaultValue)
 			} else {
-				panic("out points to big.Int, but defaultValue does not")
+				panic("out coursepoint to big.Int, but defaultValue does not")
 			}
 		default:
 			panic("invalid integer type")

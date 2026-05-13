@@ -262,7 +262,7 @@ func (h *Header) ParsedLen() protocol.ByteCount {
 }
 
 // ParseExtended parses the version dependent part of the header.
-// The Reader has to be set such that it points to the first byte of the header.
+// The Reader has to be set such that it coursepoint to the first byte of the header.
 func (h *Header) ParseExtended(data []byte) (*ExtendedHeader, error) {
 	extHdr := h.toExtendedHeader()
 	reservedBitsValid, err := extHdr.parse(data)

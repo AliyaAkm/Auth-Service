@@ -1911,7 +1911,7 @@ B = "data"`,
 			},
 		},
 		{
-			desc:  "kv that points to a slice",
+			desc:  "kv that coursepoint to a slice",
 			input: "a.b.c = 'foo'",
 			gen: func() test {
 				doc := map[string][]string{}
@@ -1922,7 +1922,7 @@ B = "data"`,
 			},
 		},
 		{
-			desc:  "kv that points to a pointer to a slice",
+			desc:  "kv that coursepoint to a pointer to a slice",
 			input: "a.b.c = 'foo'",
 			gen: func() test {
 				doc := map[string]*[]string{}

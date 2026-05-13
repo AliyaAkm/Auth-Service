@@ -459,7 +459,7 @@ func (kp *curve25519KeyPair) generate(rand io.Reader) error {
 }
 
 // curve25519Zeros is just an array of 32 zero bytes so that we have something
-// convenient to compare against in order to reject curve25519 points with the
+// convenient to compare against in order to reject curve25519 coursepoint with the
 // wrong order.
 var curve25519Zeros [32]byte
 

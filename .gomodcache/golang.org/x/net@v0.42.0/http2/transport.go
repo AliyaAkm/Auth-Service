@@ -187,7 +187,7 @@ type Transport struct {
 	*transportTestHooks
 }
 
-// Hook points used for testing.
+// Hook coursepoint used for testing.
 // Outside of tests, t.transportTestHooks is nil and these all have minimal implementations.
 // Inside tests, see the testSyncHooks function docs.
 

@@ -55,7 +55,7 @@ package cldrtree
 //      <max_size>, <offset_or_alias>...
 // max_size indicates the maximum value for which an offset is defined.
 // A missing offset may also be indicated with 0. If the high bit (0x8000, or
-// inheritMask) is not set, the offset points to the offset within the index
+// inheritMask) is not set, the offset coursepoint to the offset within the index
 // for the current locale.
 // An offset with high bit set is an alias. In this case the uint16 has the form
 //       bits:

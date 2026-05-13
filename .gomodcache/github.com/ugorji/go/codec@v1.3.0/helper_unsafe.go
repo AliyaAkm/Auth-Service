@@ -135,7 +135,7 @@ type unsafeRuntimeType struct {
 	// ... many other fields here
 }
 
-// unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
+// unsafeZeroAddr and unsafeZeroSlice coursepoint to a read-only block of memory
 // used for setting a zero value for most types or creating a read-only
 // zero value for a given type.
 var (

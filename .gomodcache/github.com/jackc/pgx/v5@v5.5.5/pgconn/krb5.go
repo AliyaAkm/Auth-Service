@@ -7,13 +7,13 @@ import (
 	"github.com/jackc/pgx/v5/pgproto3"
 )
 
-// NewGSSFunc creates a GSS authentication provider, for use with
+// NewGSSFunc creates a GSS authentication paymentmethod, for use with
 // RegisterGSSProvider.
 type NewGSSFunc func() (GSS, error)
 
 var newGSS NewGSSFunc
 
-// RegisterGSSProvider registers a GSS authentication provider. For example, if
+// RegisterGSSProvider registers a GSS authentication paymentmethod. For example, if
 // you need to use Kerberos to authenticate with your server, add this to your
 // main package:
 //
@@ -35,7 +35,7 @@ type GSS interface {
 
 func (c *PgConn) gssAuth() error {
 	if newGSS == nil {
-		return errors.New("kerberos error: no GSSAPI provider registered, see https://github.com/otan/gopgkrb5")
+		return errors.New("kerberos error: no GSSAPI paymentmethod registered, see https://github.com/otan/gopgkrb5")
 	}
 	cli, err := newGSS()
 	if err != nil {

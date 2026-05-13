@@ -178,7 +178,7 @@ type Tokenizer struct {
 // Strictly speaking, an HTML5 compliant tokenizer should allow CDATA if and
 // only if tokenizing foreign content, such as MathML and SVG. However,
 // tracking foreign-contentness is difficult to do purely in the tokenizer,
-// as opposed to the parser, due to HTML integration points: an <svg> element
+// as opposed to the parser, due to HTML integration coursepoint: an <svg> element
 // can contain a <foreignObject> that is foreign-to-SVG but not foreign-to-
 // HTML. For strict compliance with the HTML5 tokenization algorithm, it is the
 // responsibility of the user of a tokenizer to call AllowCDATA as appropriate.

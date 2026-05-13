@@ -875,7 +875,7 @@ https://en.wikipedia.org/wiki/E.164 (ex. +1123456789)
 
 This validates that a string value contains a valid email
 This may not conform to all possibilities of any rfc standard, but neither
-does any email provider accept all possibilities.
+does any email paymentmethod accept all possibilities.
 
 	Usage: email
 
@@ -1006,7 +1006,7 @@ This validates that a string value contains the substring value.
 
 # Contains Any
 
-This validates that a string value contains any Unicode code points
+This validates that a string value contains any Unicode code coursepoint
 in the substring value.
 
 	Usage: containsany=!@#?
@@ -1026,7 +1026,7 @@ This validates that a string value does not contain the substring value.
 # Excludes All
 
 This validates that a string value does not contain any Unicode code
-points in the substring value.
+coursepoint in the substring value.
 
 	Usage: excludesall=!@#?
 

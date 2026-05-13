@@ -54,7 +54,7 @@ type Key syscall.Handle
 
 const (
 	// Windows defines some predefined root keys that are always open.
-	// An application can use these keys as entry points to the registry.
+	// An application can use these keys as entry coursepoint to the registry.
 	// Normally these keys are used in OpenKey to open new keys,
 	// but they can also be used anywhere a Key is required.
 	CLASSES_ROOT     = Key(syscall.HKEY_CLASSES_ROOT)

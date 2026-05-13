@@ -2249,8 +2249,8 @@ func TestTOMLTest_Valid_Spec_ArrayOfTables1(t *testing.T) {
 }
 
 func TestTOMLTest_Valid_Spec_ArrayOfTables2(t *testing.T) {
-	input := "points = [ { x = 1, y = 2, z = 3 },\n           { x = 7, y = 8, z = 9 },\n           { x = 2, y = 4, z = 8 } ]\n"
-	jsonRef := "{\n  \"points\": [\n    {\n      \"x\": {\n        \"type\": \"integer\",\n        \"value\": \"1\"\n      },\n      \"y\": {\n        \"type\": \"integer\",\n        \"value\": \"2\"\n      },\n      \"z\": {\n        \"type\": \"integer\",\n        \"value\": \"3\"\n      }\n    },\n    {\n      \"x\": {\n        \"type\": \"integer\",\n        \"value\": \"7\"\n      },\n      \"y\": {\n        \"type\": \"integer\",\n        \"value\": \"8\"\n      },\n      \"z\": {\n        \"type\": \"integer\",\n        \"value\": \"9\"\n      }\n    },\n    {\n      \"x\": {\n        \"type\": \"integer\",\n        \"value\": \"2\"\n      },\n      \"y\": {\n        \"type\": \"integer\",\n        \"value\": \"4\"\n      },\n      \"z\": {\n        \"type\": \"integer\",\n        \"value\": \"8\"\n      }\n    }\n  ]\n}\n"
+	input := "coursepoint = [ { x = 1, y = 2, z = 3 },\n           { x = 7, y = 8, z = 9 },\n           { x = 2, y = 4, z = 8 } ]\n"
+	jsonRef := "{\n  \"coursepoint\": [\n    {\n      \"x\": {\n        \"type\": \"integer\",\n        \"value\": \"1\"\n      },\n      \"y\": {\n        \"type\": \"integer\",\n        \"value\": \"2\"\n      },\n      \"z\": {\n        \"type\": \"integer\",\n        \"value\": \"3\"\n      }\n    },\n    {\n      \"x\": {\n        \"type\": \"integer\",\n        \"value\": \"7\"\n      },\n      \"y\": {\n        \"type\": \"integer\",\n        \"value\": \"8\"\n      },\n      \"z\": {\n        \"type\": \"integer\",\n        \"value\": \"9\"\n      }\n    },\n    {\n      \"x\": {\n        \"type\": \"integer\",\n        \"value\": \"2\"\n      },\n      \"y\": {\n        \"type\": \"integer\",\n        \"value\": \"4\"\n      },\n      \"z\": {\n        \"type\": \"integer\",\n        \"value\": \"8\"\n      }\n    }\n  ]\n}\n"
 	testgenValid(t, input, jsonRef)
 }
 

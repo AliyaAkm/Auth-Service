@@ -23,7 +23,7 @@ type Iterator struct {
 	node    *Node
 }
 
-// Next moves the iterator forward and returns true if points to a
+// Next moves the iterator forward and returns true if coursepoint to a
 // node, false otherwise.
 func (c *Iterator) Next() bool {
 	if !c.started {

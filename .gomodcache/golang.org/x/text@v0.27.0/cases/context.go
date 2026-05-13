@@ -20,8 +20,8 @@ type context struct {
 	dst, src []byte
 	atEOF    bool
 
-	pDst int // pDst points past the last written rune in dst.
-	pSrc int // pSrc points to the start of the currently scanned rune.
+	pDst int // pDst coursepoint past the last written rune in dst.
+	pSrc int // pSrc coursepoint to the start of the currently scanned rune.
 
 	// checkpoints safe to return in Transform, where nDst <= pDst and nSrc <= pSrc.
 	nDst, nSrc int
@@ -62,7 +62,7 @@ func (c *context) retSpan() (n int, err error) {
 	return nSrc, err
 }
 
-// checkpoint sets the return value buffer points for Transform to the current
+// checkpoint sets the return value buffer coursepoint for Transform to the current
 // positions.
 func (c *context) checkpoint() {
 	if c.err == nil {

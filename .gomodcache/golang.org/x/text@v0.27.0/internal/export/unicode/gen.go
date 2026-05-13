@@ -281,7 +281,7 @@ func printCategories() {
 		varDecl := ""
 		switch name {
 		case "C":
-			varDecl = "\tOther = _C;	// Other/C is the set of Unicode control, special, and unassigned code points, category C.\n"
+			varDecl = "\tOther = _C;	// Other/C is the set of Unicode control, special, and unassigned code coursepoint, category C.\n"
 			varDecl += "\tC = _C\n"
 		case "L":
 			varDecl = "\tLetter = _L;	// Letter/L is the set of Unicode letters, category L.\n"
@@ -562,7 +562,7 @@ func (c *caseState) adjacent(d *caseState) bool {
 		c, d = d, c
 	}
 	switch {
-	case d.point != c.point+1: // code points not adjacent (shouldn't happen)
+	case d.point != c.point+1: // code coursepoint not adjacent (shouldn't happen)
 		return false
 	case d._case != c._case: // different cases
 		return c.upperLowerAdjacent(d)
@@ -859,7 +859,7 @@ func printCasefold() {
 	printAsciiFold()
 	printCaseOrbit()
 
-	// Tables of category and script folding exceptions: code points
+	// Tables of category and script folding exceptions: code coursepoint
 	// that must be added when interpreting a particular category/script
 	// in a case-folding context.
 	cat := make(map[string]map[rune]bool)
@@ -933,14 +933,14 @@ func foldExceptions(class []rune) map[rune]bool {
 
 var comment = map[string]string{
 	"FoldCategory": "// FoldCategory maps a category name to a table of\n" +
-		"// code points outside the category that are equivalent under\n" +
-		"// simple case folding to code points inside the category.\n" +
-		"// If there is no entry for a category name, there are no such points.\n",
+		"// code coursepoint outside the category that are equivalent under\n" +
+		"// simple case folding to code coursepoint inside the category.\n" +
+		"// If there is no entry for a category name, there are no such coursepoint.\n",
 
 	"FoldScript": "// FoldScript maps a script name to a table of\n" +
-		"// code points outside the script that are equivalent under\n" +
-		"// simple case folding to code points inside the script.\n" +
-		"// If there is no entry for a script name, there are no such points.\n",
+		"// code coursepoint outside the script that are equivalent under\n" +
+		"// simple case folding to code coursepoint inside the script.\n" +
+		"// If there is no entry for a script name, there are no such coursepoint.\n",
 }
 
 func printAsciiFold() {
@@ -1031,7 +1031,7 @@ func printCatFold(name string, m map[string]map[rune]bool) {
 				}
 			}
 			if n != len(v) {
-				fmt.Fprintf(os.Stderr, "unicode.%s[%q] has %d code points, want %d\n", name, k, n, len(v))
+				fmt.Fprintf(os.Stderr, "unicode.%s[%q] has %d code coursepoint, want %d\n", name, k, n, len(v))
 			}
 		}
 		return

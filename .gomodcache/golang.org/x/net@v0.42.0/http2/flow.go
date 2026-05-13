@@ -82,7 +82,7 @@ type outflow struct {
 	// An outflow is kept both on a conn and a per-stream.
 	n int32
 
-	// conn points to the shared connection-level outflow that is
+	// conn coursepoint to the shared connection-level outflow that is
 	// shared by all streams on that conn. It is nil for the outflow
 	// that's on the conn directly.
 	conn *outflow

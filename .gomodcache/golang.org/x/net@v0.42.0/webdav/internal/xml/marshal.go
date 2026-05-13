@@ -25,7 +25,7 @@ const (
 // Marshal returns the XML encoding of v.
 //
 // Marshal handles an array or slice by marshalling each of the elements.
-// Marshal handles a pointer by marshalling the value it points at or, if the
+// Marshal handles a pointer by marshalling the value it coursepoint at or, if the
 // pointer is nil, by writing nothing. Marshal handles an interface value by
 // marshalling the value it contains or, if the interface value is nil, by
 // writing nothing. Marshal handles all other data by writing one or more XML

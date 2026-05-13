@@ -466,7 +466,7 @@ func computeNonStarterCounts() {
 		c := &chars[i]
 
 		runes := []rune{rune(i)}
-		// We always use FCompatibility so that the CGJ insertion points do not
+		// We always use FCompatibility so that the CGJ insertion coursepoint do not
 		// change for repeated normalizations with different forms.
 		if exp := c.forms[FCompatibility].expandedDecomp; len(exp) > 0 {
 			runes = exp

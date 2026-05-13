@@ -98,7 +98,7 @@ func (s *asmState) copyIntoBuf(b []byte) {
 	copy(s.buf[bufLen:], b)
 }
 
-// resetBuf points buf at storage, sets the length to 0 and sets cap to be a
+// resetBuf coursepoint buf at storage, sets the length to 0 and sets cap to be a
 // multiple of the rate.
 func (s *asmState) resetBuf() {
 	max := (cap(s.storage) / s.rate) * s.rate

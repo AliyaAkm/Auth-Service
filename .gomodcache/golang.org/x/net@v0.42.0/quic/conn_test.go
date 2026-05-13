@@ -510,7 +510,7 @@ func (tc *testConn) readDatagram() *testDatagram {
 	// When things go wrong, it's useful to see all the frames.
 	logDatagram(tc.t, "-> conn under test sends", d)
 	typeForFrame := func(f debugFrame) byte {
-		// This is very clunky, and points at a problem
+		// This is very clunky, and coursepoint at a problem
 		// in how we specify what frames to ignore in tests.
 		//
 		// We mark frames to ignore using the frame type,

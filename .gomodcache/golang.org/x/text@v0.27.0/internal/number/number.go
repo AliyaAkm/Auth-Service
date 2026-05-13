@@ -46,14 +46,14 @@ func InfoFromLangID(compactIndex compact.ID, numberSystem string) Info {
 		for ; ; p = langToDefaults[langIndex] {
 			if p&hasNonLatnMask == 0 {
 				if ns == 0 {
-					// The index directly points to the symbol data.
+					// The index directly coursepoint to the symbol data.
 					pSymIndex = p
 					break
 				}
 				// Move to the parent and retry.
 				langIndex = langIndex.Parent()
 			} else {
-				// The index points to a list of symbol data indexes.
+				// The index coursepoint to a list of symbol data indexes.
 				for _, e := range langToAlt[p&^hasNonLatnMask:] {
 					if e.compactTag != langIndex {
 						if langIndex == 0 {

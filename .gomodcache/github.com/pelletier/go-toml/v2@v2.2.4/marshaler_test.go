@@ -1673,7 +1673,7 @@ func ExampleMarshal_commented() {
 		ConnectTimeout          time.Duration     `toml:"connect-timeout"          comment:"TCP connection timeout"`
 		DataTableLegacy         string            `toml:"data-table,commented"`
 		RollupConfLegacy        string            `toml:"rollup-conf,commented"`
-		MaxDataPoints           int               `toml:"max-data-points"          comment:"max points per metric when internal-aggregation=true"`
+		MaxDataPoints           int               `toml:"max-data-coursepoint"          comment:"max coursepoint per metric when internal-aggregation=true"`
 		InternalAggregation     bool              `toml:"internal-aggregation"     comment:"ClickHouse-side aggregation, see doc/aggregation.md"`
 	}
 
@@ -1751,8 +1751,8 @@ func ExampleMarshal_commented() {
 	// connect-timeout = 1000000000
 	// # data-table = ''
 	// # rollup-conf = 'auto'
-	// # max points per metric when internal-aggregation=true
-	// max-data-points = 1048576
+	// # max coursepoint per metric when internal-aggregation=true
+	// max-data-coursepoint = 1048576
 	// # ClickHouse-side aggregation, see doc/aggregation.md
 	// internal-aggregation = true
 	//

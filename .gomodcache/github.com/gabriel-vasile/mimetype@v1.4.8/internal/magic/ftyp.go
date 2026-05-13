@@ -91,7 +91,7 @@ func QuickTime(raw []byte, _ uint32) bool {
 }
 
 // Mp4 detects an .mp4 file. Mp4 detections only does a basic ftyp check.
-// Mp4 has many registered and unregistered code points so it's hard to keep track
+// Mp4 has many registered and unregistered code coursepoint so it's hard to keep track
 // of all. Detection will default on video/mp4 for all ftyp files.
 // ISO_IEC_14496-12 is the specification for the iso container.
 func Mp4(raw []byte, _ uint32) bool {

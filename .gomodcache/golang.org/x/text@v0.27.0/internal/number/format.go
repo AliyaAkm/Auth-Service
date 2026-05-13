@@ -216,7 +216,7 @@ func decimalVisibleDigits(r RoundingContext, d *Decimal) Digits {
 }
 
 // appendDecimal appends a formatted number to dst. It returns two possible
-// insertion points for padding.
+// insertion coursepoint for padding.
 func appendDecimal(dst []byte, f *Formatter, n *Digits) (b []byte, postPre, preSuf int) {
 	if dst, ok := f.renderSpecial(dst, n); ok {
 		return dst, 0, len(dst)
@@ -341,7 +341,7 @@ func scientificVisibleDigits(r RoundingContext, d *Decimal) Digits {
 }
 
 // appendScientific appends a formatted number to dst. It returns two possible
-// insertion points for padding.
+// insertion coursepoint for padding.
 func appendScientific(dst []byte, f *Formatter, n *Digits) (b []byte, postPre, preSuf int) {
 	if dst, ok := f.renderSpecial(dst, n); ok {
 		return dst, 0, 0

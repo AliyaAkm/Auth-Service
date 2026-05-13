@@ -46,7 +46,7 @@ func TestECDH(t *testing.T) {
 	}
 
 	flagsShouldPass := map[string]bool{
-		// ParsePKIXPublicKey doesn't support compressed points, but we test
+		// ParsePKIXPublicKey doesn't support compressed coursepoint, but we test
 		// them against UnmarshalCompressed anyway.
 		"CompressedPoint": true,
 		// We don't support decoding custom curves.

@@ -17,7 +17,7 @@ type ContractTrieSet []struct{ L, H, N, I uint8 }
 // not block combining_ring.
 // ctScanner does not automatically skip over non-blocking non-starters, but rather
 // retains the state of the last match and leaves it up to the user to continue
-// the match at the appropriate points.
+// the match at the appropriate coursepoint.
 type ctScanner struct {
 	states ContractTrieSet
 	s      []byte

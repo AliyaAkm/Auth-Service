@@ -190,7 +190,7 @@ func (scanPlanBinaryPathToPathScanner) Scan(src []byte, dst any) error {
 	rp := 5
 
 	if 5+pointCount*16 != len(src) {
-		return fmt.Errorf("invalid length for Path with %d points: %v", pointCount, len(src))
+		return fmt.Errorf("invalid length for Path with %d coursepoint: %v", pointCount, len(src))
 	}
 
 	points := make([]Vec2, pointCount)

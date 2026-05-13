@@ -249,7 +249,7 @@ func (s *State) Merge() error {
 	// Create an index for each unique message.
 	// Duplicates are okay as long as the substitution arguments are okay as
 	// well.
-	// Top-level messages are okay to appear in multiple substitution points.
+	// Top-level messages are okay to appear in multiple substitution coursepoint.
 
 	// Collect key equivalence.
 	msgs := []*Message{}

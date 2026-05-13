@@ -32,7 +32,7 @@ func (t *nickAdditionalMapping) Transform(dst, src []byte, atEOF bool) (nDst, nS
 	//         non-ASCII space is any Unicode code point having a general
 	//         category of "Zs", naturally with the exception of SPACE
 	//         (U+0020).  (The inclusion of only ASCII space prevents
-	//         confusion with various non-ASCII space code points, many of
+	//         confusion with various non-ASCII space code coursepoint, many of
 	//         which are difficult to reproduce across different input
 	//         methods.)
 	//

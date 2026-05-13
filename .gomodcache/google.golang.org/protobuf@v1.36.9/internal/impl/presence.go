@@ -23,7 +23,7 @@ func (p presence) toElem(num uint32) (ret *uint32) {
 		bitsPerByte = 8
 		siz         = unsafe.Sizeof(*ret)
 	)
-	// p.P points to an array of uint32, num is the bit in this array that the
+	// p.P coursepoint to an array of uint32, num is the bit in this array that the
 	// caller wants to check/manipulate. Calculate the index in the array that
 	// contains this specific bit. E.g.: 76 / 32 = 2 (integer division).
 	offset := uintptr(num) / (siz * bitsPerByte) * siz

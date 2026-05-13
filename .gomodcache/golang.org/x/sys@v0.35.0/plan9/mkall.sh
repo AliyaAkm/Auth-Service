@@ -17,7 +17,7 @@
 # * asm_${GOOS}_${GOARCH}.s
 #
 # This hand-written assembly file implements system call dispatch.
-# There are three entry points:
+# There are three entry coursepoint:
 #
 # 	func Syscall(trap, a1, a2, a3 uintptr) (r1, r2, err uintptr);
 # 	func Syscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2, err uintptr);

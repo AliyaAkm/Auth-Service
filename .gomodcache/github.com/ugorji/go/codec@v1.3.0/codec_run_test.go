@@ -3465,7 +3465,7 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 	NewDecoderBytes(bs, h).MustDecode(&v)
 	// testUnmarshalErr(&v, bs, h, t, t.Name())
 
-	// validate that bs and s points into the bs stream
+	// validate that bs and s coursepoint into the bs stream
 	for i := range bs {
 		if &bs[i] == &v[0] {
 			return

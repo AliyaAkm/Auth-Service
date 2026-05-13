@@ -1957,7 +1957,7 @@ func Construct(hc *HijackedConn) (*PgConn, error) {
 //
 // SendPrepare, SendQueryParams, and SendQueryPrepared queue requests to the server. These requests are not written until
 // pipeline is flushed by Flush or Sync. Sync must be called after the last request is queued. Requests between
-// synchronization points are implicitly transactional unless explicit transaction control statements have been issued.
+// synchronization coursepoint are implicitly transactional unless explicit transaction control statements have been issued.
 //
 // The context the pipeline was started with is in effect for the entire life of the Pipeline.
 //

@@ -36,7 +36,7 @@ func (d *Decoder) parseStringValue() (Token, error) {
 		}
 		ss = append(ss, s)
 	}
-	// d.in already points to the end of the value at this point.
+	// d.in already coursepoint to the end of the value at this point.
 	return Token{
 		kind:  Scalar,
 		attrs: stringValue,

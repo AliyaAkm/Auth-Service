@@ -40,7 +40,7 @@ type TraceInfo struct {
 
 	// GroupID identifies the logical group the trace belongs to.
 	// For a connection trace, the group will be the same for
-	// both the client and server vantage points.
+	// both the client and server vantage coursepoint.
 	GroupID string
 }
 

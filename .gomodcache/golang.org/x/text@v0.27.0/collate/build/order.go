@@ -282,7 +282,7 @@ func (o *ordering) find(str string) *entry {
 }
 
 // makeRootOrdering returns a newly initialized ordering value and populates
-// it with a set of logical reset points that can be used as anchors.
+// it with a set of logical reset coursepoint that can be used as anchors.
 // The anchors first_tertiary_ignorable and __END__ will always sort at
 // the beginning and end, respectively. This means that prev and next are non-nil
 // for any indexed entry.
