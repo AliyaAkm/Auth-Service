@@ -75,6 +75,50 @@ func (r *RBAC) ListRoles(ctx context.Context) ([]domain.Role, error) {
 	return r.users.ListRoles(ctx)
 }
 
+func (r *RBAC) GetUserProfile(ctx context.Context, actorUserID, targetUserID uuid.UUID) (domain.User, error) {
+	actor, err := r.requireActor(ctx, actorUserID)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if actorUserID != targetUserID && !domain.HasRole(actor.Roles, domain.RoleAdmin) {
+		return domain.User{}, domain.ErrForbidden
+	}
+
+	return r.users.GetProfileByID(ctx, targetUserID)
+}
+
+func (r *RBAC) GetUserProfileByID(ctx context.Context, actorUserID, targetUserID uuid.UUID) (domain.User, error) {
+	actor, err := r.requireActor(ctx, actorUserID)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if !domain.HasRole(actor.Roles, domain.RoleAdmin) {
+		return domain.User{}, domain.ErrForbidden
+	}
+
+	return r.users.GetProfileByID(ctx, targetUserID)
+}
+
+func (r *RBAC) UpdateUserProfile(ctx context.Context, actorUserID, targetUserID uuid.UUID, update domain.UserProfileUpdate) (domain.User, error) {
+	actor, err := r.requireActor(ctx, actorUserID)
+	if err != nil {
+		return domain.User{}, err
+	}
+	isAdmin := domain.HasRole(actor.Roles, domain.RoleAdmin)
+	if actorUserID != targetUserID && !isAdmin {
+		return domain.User{}, domain.ErrForbidden
+	}
+
+	if _, ok := r.users.FindByID(ctx, targetUserID); !ok {
+		return domain.User{}, domain.ErrNotFound
+	}
+	if err := r.users.UpdateUserProfile(ctx, targetUserID, update); err != nil {
+		return domain.User{}, err
+	}
+
+	return r.users.GetProfileByID(ctx, targetUserID)
+}
+
 func (r *RBAC) GetUserRoles(ctx context.Context, actorUserID, targetUserID uuid.UUID) ([]domain.Role, error) {
 	actor, err := r.requireActor(ctx, actorUserID)
 	if err != nil {

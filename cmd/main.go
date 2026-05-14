@@ -21,14 +21,21 @@ import (
 	"auth-service/internal/usecase"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func main() {
 	_ = godotenv.Load(".env")
 
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal("logger initialization error:", err)
+	}
+	defer logger.Sync()
+
 	cfg, err := config.ReadEnv()
 	if err != nil {
-		log.Fatal("configuration error:", err)
+		logger.Fatal("configuration error", zap.Error(err))
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -36,7 +43,7 @@ func main() {
 
 	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL())
 	if err != nil {
-		log.Fatal("error connecting to the database:", err)
+		logger.Fatal("error connecting to the database", zap.Error(err))
 	}
 	defer pool.Close()
 
@@ -55,7 +62,7 @@ func main() {
 		cfg.SMTP.PasswordResetSubject,
 	)
 	if err != nil {
-		log.Fatal("smtp configuration error:", err)
+		logger.Fatal("smtp configuration error", zap.Error(err))
 	}
 
 	jwtMgr := jwtlib.New(
@@ -83,7 +90,7 @@ func main() {
 	authH := handlers.NewAuthHandler(authUC, jwtMgr)
 	rbacH := handlers.NewRBACHandler(rbacUC)
 
-	engine := router.New(authH, rbacH, jwtMgr)
+	engine := router.New(authH, rbacH, jwtMgr, logger)
 
 	srv := &http.Server{
 		Addr:              cfg.ListenAddr(),
@@ -92,9 +99,9 @@ func main() {
 	}
 
 	go func() {
-		log.Println("auth-service started on", cfg.ListenAddr())
+		logger.Info("auth-service started", zap.String("addr", cfg.ListenAddr()))
 		if err := srv.ListenAndServe(); err != nil && errors.Is(http.ErrServerClosed, err) {
-			log.Println("server error:", err)
+			logger.Error("server error", zap.Error(err))
 		}
 	}()
 
@@ -104,8 +111,8 @@ func main() {
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Println("shutdown error:", err)
+		logger.Error("shutdown error", zap.Error(err))
 	}
 
-	log.Println("auth-service stopped")
+	logger.Info("auth-service stopped")
 }

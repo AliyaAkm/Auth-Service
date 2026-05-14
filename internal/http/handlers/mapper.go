@@ -8,11 +8,39 @@ import (
 )
 
 func toUserResponse(user *domain.User) dto.UserResponse {
+	displayName := user.Login
+	if displayName == "" {
+		displayName = user.Email
+	}
+
 	return dto.UserResponse{
 		ID:        user.ID,
 		Email:     user.Email,
+		Login:     user.Login,
+		Name:      displayName,
+		Bio:       user.Bio,
+		PhotoURL:  user.PhotoURL,
+		Streak:    user.Streak,
+		MaxStreak: user.MaxStreak,
+		XP:        user.XP,
+		Level:     user.Level,
 		Roles:     toRoleResponses(user.Roles),
 		IsActive:  user.IsActive,
+		CreatedAt: user.CreatedAt,
+	}
+}
+
+func toProfileResponse(user *domain.User) dto.ProfileResponse {
+	return dto.ProfileResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Login:     user.Login,
+		Bio:       user.Bio,
+		PhotoURL:  user.PhotoURL,
+		Streak:    user.Streak,
+		MaxStreak: user.MaxStreak,
+		XP:        user.XP,
+		Level:     user.Level,
 		CreatedAt: user.CreatedAt,
 	}
 }

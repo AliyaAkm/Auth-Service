@@ -6,6 +6,7 @@ import (
 	jwtlib "auth-service/internal/service/jwt"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 const (
@@ -15,9 +16,9 @@ const (
 	RoleAdmin   = "admin"
 )
 
-func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtlib.Manager) *gin.Engine {
+func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtlib.Manager, logger *zap.Logger) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(gin.Logger(), gin.Recovery(), middleware.ErrorLogger(logger))
 
 	r.GET("/health", health)
 
@@ -45,6 +46,14 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 	rolesGroup.Use(middleware.Authenticate(jwtMgr), middleware.RequireRole(RoleAdmin, RoleManager))
 	{
 		rolesGroup.GET("/", rbacH.ListRoles)
+	}
+
+	profilesGroup := r.Group("/profiles")
+	profilesGroup.Use(middleware.Authenticate(jwtMgr))
+	{
+		profilesGroup.GET("/me", rbacH.GetUserProfile)
+		profilesGroup.PATCH("/me", rbacH.UpdateUserProfile)
+		profilesGroup.GET("/:userID", middleware.RequireRole(RoleAdmin), rbacH.GetUserProfileByID)
 	}
 
 	userRolesGroup := r.Group("/user_roles")

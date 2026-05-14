@@ -29,6 +29,16 @@ type UpdateUserStatusRequest struct {
 	IsActive *bool     `json:"is_active"`
 }
 
+type UpdateUserProfileRequest struct {
+	Email        *string `json:"email"`
+	Login        *string `json:"login"`
+	Name         *string `json:"name"`
+	Bio          *string `json:"bio"`
+	PhotoURL     *string `json:"photo_url"`
+	AvatarURL    *string `json:"avatar_url"`
+	AvatarBase64 *string `json:"avatarBase64"`
+}
+
 type RoleResponse struct {
 	ID           uuid.UUID `json:"id"`
 	Code         string    `json:"code"`
@@ -43,9 +53,30 @@ type RoleResponse struct {
 type UserResponse struct {
 	ID        uuid.UUID      `json:"id"`
 	Email     string         `json:"email"`
+	Login     string         `json:"login"`
+	Name      string         `json:"name"`
+	Bio       string         `json:"bio"`
+	PhotoURL  string         `json:"photo_url"`
+	Streak    int            `json:"streak"`
+	MaxStreak int            `json:"max_streak"`
+	XP        int64          `json:"xp"`
+	Level     int            `json:"level"`
 	Roles     []RoleResponse `json:"roles"`
 	IsActive  bool           `json:"is_active"`
 	CreatedAt time.Time      `json:"created_at"`
+}
+
+type ProfileResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	Login     string    `json:"login"`
+	Bio       string    `json:"bio"`
+	PhotoURL  string    `json:"photo_url"`
+	Streak    int       `json:"streak"`
+	MaxStreak int       `json:"max_streak"`
+	XP        int64     `json:"xp"`
+	Level     int       `json:"level"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type UserRolesResponse struct {

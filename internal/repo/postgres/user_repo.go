@@ -4,9 +4,12 @@ import (
 	"auth-service/internal/domain"
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -131,6 +134,56 @@ func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (domain.User, boo
 	return u, true
 }
 
+func (r *UserRepo) GetProfileByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+	if err := r.syncUserLevel(ctx, id); err != nil {
+		return domain.User{}, err
+	}
+
+	var u domain.User
+	err := r.db.QueryRow(ctx, `
+		WITH profile AS (
+			SELECT
+				users.*,
+				COALESCE((SELECT streak FROM daily_streak WHERE user_id = users.id ORDER BY last_login DESC LIMIT 1), 0)::integer AS current_streak
+			FROM users
+			WHERE id = $1
+		)
+		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''),
+		       current_streak,
+		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
+		       COALESCE(level, 0)::integer,
+		       COALESCE((SELECT SUM(xp) FROM user_course_points WHERE user_id = profile.id), 0)::bigint,
+		       password_hash, is_active, created_at
+		FROM profile
+	`, id).Scan(
+		&u.ID,
+		&u.Email,
+		&u.Login,
+		&u.Bio,
+		&u.PhotoURL,
+		&u.Streak,
+		&u.MaxStreak,
+		&u.Level,
+		&u.XP,
+		&u.PasswordHash,
+		&u.IsActive,
+		&u.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, domain.ErrNotFound
+		}
+		return domain.User{}, err
+	}
+
+	u.Roles, err = r.listUserRoles(ctx, r.db, u.ID)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return u, nil
+}
+
 func (r *UserRepo) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
 	tag, err := r.db.Exec(ctx, `
 		UPDATE users
@@ -138,6 +191,50 @@ func (r *UserRepo) UpdatePassword(ctx context.Context, userID uuid.UUID, passwor
 		WHERE id = $1
 	`, userID, passwordHash)
 	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepo) UpdateUserProfile(ctx context.Context, userID uuid.UUID, update domain.UserProfileUpdate) error {
+	set := make([]string, 0, 4)
+	args := []any{userID}
+
+	add := func(column string, value any) {
+		args = append(args, value)
+		set = append(set, fmt.Sprintf("%s = $%d", column, len(args)))
+	}
+
+	if update.Email != nil {
+		add("email", *update.Email)
+	}
+	if update.Login != nil {
+		add("login", *update.Login)
+	}
+	if update.Bio != nil {
+		add("bio", *update.Bio)
+	}
+	if update.PhotoURL != nil {
+		add("photo_url", *update.PhotoURL)
+	}
+	if len(set) == 0 {
+		return nil
+	}
+
+	tag, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET `+strings.Join(set, ", ")+`
+		WHERE id = $1
+	`, args...)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return domain.ErrEmailTaken
+		}
 		return err
 	}
 	if tag.RowsAffected() == 0 {
@@ -164,9 +261,24 @@ func (r *UserRepo) UpdateStatus(ctx context.Context, userID uuid.UUID, isActive 
 }
 
 func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
+	if err := r.syncAllUserLevels(ctx); err != nil {
+		return nil, err
+	}
+
 	rows, err := r.db.Query(ctx, `
-		SELECT id, email, password_hash, is_active, created_at
-		FROM users
+		WITH profiles AS (
+			SELECT
+				users.*,
+				COALESCE((SELECT streak FROM daily_streak WHERE user_id = users.id ORDER BY last_login DESC LIMIT 1), 0)::integer AS current_streak
+			FROM users
+		)
+		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''),
+		       current_streak,
+		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
+		       COALESCE(level, 0)::integer,
+		       COALESCE((SELECT SUM(xp) FROM user_course_points WHERE user_id = profiles.id), 0)::bigint,
+		       password_hash, is_active, created_at
+		FROM profiles
 		ORDER BY created_at DESC, email
 	`)
 	if err != nil {
@@ -180,6 +292,13 @@ func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 		err := rows.Scan(
 			&user.ID,
 			&user.Email,
+			&user.Login,
+			&user.Bio,
+			&user.PhotoURL,
+			&user.Streak,
+			&user.MaxStreak,
+			&user.Level,
+			&user.XP,
 			&user.PasswordHash,
 			&user.IsActive,
 			&user.CreatedAt,
@@ -201,6 +320,37 @@ func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	}
 
 	return users, nil
+}
+
+func (r *UserRepo) syncUserLevel(ctx context.Context, userID uuid.UUID) error {
+	_, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET level = (
+			1 + (
+				COALESCE((SELECT SUM(xp) FROM user_course_points WHERE user_id = users.id), 0)::bigint / 180
+			)
+		)::integer
+		WHERE id = $1
+	`, userID)
+	return err
+}
+
+func (r *UserRepo) syncAllUserLevels(ctx context.Context) error {
+	_, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET level = levels.computed_level
+		FROM (
+			SELECT
+				u.id,
+				(1 + (COALESCE(SUM(ucp.xp), 0)::bigint / 180))::integer AS computed_level
+			FROM users u
+			LEFT JOIN user_course_points ucp ON ucp.user_id = u.id
+			GROUP BY u.id
+		) AS levels
+		WHERE users.id = levels.id
+		  AND users.level IS DISTINCT FROM levels.computed_level
+	`)
+	return err
 }
 
 func (r *UserRepo) ListRoles(ctx context.Context) ([]domain.Role, error) {

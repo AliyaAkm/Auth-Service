@@ -13,7 +13,9 @@ type UserRepository interface {
 	CreateWithRoles(ctx context.Context, u domain.User, roleCodes []string, assignedBy *uuid.UUID) error
 	FindByEmail(ctx context.Context, email string) (domain.User, bool)
 	FindByID(ctx context.Context, id uuid.UUID) (domain.User, bool)
+	GetProfileByID(ctx context.Context, id uuid.UUID) (domain.User, error)
 	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
+	UpdateUserProfile(ctx context.Context, userID uuid.UUID, update domain.UserProfileUpdate) error
 	UpdateStatus(ctx context.Context, userID uuid.UUID, isActive bool) error
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	ListRoles(ctx context.Context) ([]domain.Role, error)

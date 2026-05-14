@@ -69,12 +69,41 @@ func (r *rbacRepoStub) FindByID(_ context.Context, id uuid.UUID) (domain.User, b
 	return user, ok
 }
 
+func (r *rbacRepoStub) GetProfileByID(_ context.Context, id uuid.UUID) (domain.User, error) {
+	user, ok := r.users[id]
+	if !ok {
+		return domain.User{}, domain.ErrNotFound
+	}
+	return user, nil
+}
+
 func (r *rbacRepoStub) UpdatePassword(_ context.Context, userID uuid.UUID, passwordHash string) error {
 	user, ok := r.users[userID]
 	if !ok {
 		return domain.ErrNotFound
 	}
 	user.PasswordHash = passwordHash
+	r.users[userID] = user
+	return nil
+}
+
+func (r *rbacRepoStub) UpdateUserProfile(_ context.Context, userID uuid.UUID, update domain.UserProfileUpdate) error {
+	user, ok := r.users[userID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	if update.Email != nil {
+		user.Email = *update.Email
+	}
+	if update.Login != nil {
+		user.Login = *update.Login
+	}
+	if update.Bio != nil {
+		user.Bio = *update.Bio
+	}
+	if update.PhotoURL != nil {
+		user.PhotoURL = *update.PhotoURL
+	}
 	r.users[userID] = user
 	return nil
 }

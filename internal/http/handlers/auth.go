@@ -262,6 +262,8 @@ func writeDomainError(c *gin.Context, err error) {
 		respond.Error(c, http.StatusForbidden, "inactive_user", domain.ErrInactiveUser.Error())
 	case errors.Is(err, domain.ErrForbidden):
 		respond.Error(c, http.StatusForbidden, "forbidden", domain.ErrForbidden.Error())
+	case errors.Is(err, domain.ErrNotFound):
+		respond.Error(c, http.StatusNotFound, "not_found", domain.ErrNotFound.Error())
 	case errors.Is(err, domain.ErrInvalidToken), errors.Is(err, domain.ErrSessionRevoked):
 		respond.Error(c, http.StatusUnauthorized, "invalid_token", domain.ErrInvalidToken.Error())
 	case errors.Is(err, domain.ErrRoleNotFound):

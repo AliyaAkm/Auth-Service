@@ -8,6 +8,7 @@ import (
 	"auth-service/internal/usecase"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -77,6 +78,81 @@ func (h *RBACHandler) ListRoles(c *gin.Context) {
 	}
 
 	respond.JSON(c, http.StatusOK, toRoleResponses(roles))
+}
+
+func (h *RBACHandler) GetUserProfile(c *gin.Context) {
+	actorUserID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	user, err := h.uc.GetUserProfile(c, actorUserID, actorUserID)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, toProfileResponse(&user))
+}
+
+func (h *RBACHandler) GetUserProfileByID(c *gin.Context) {
+	actorUserID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	targetUserID, err := uuid.Parse(c.Param("userID"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "validation", "invalid user id")
+		return
+	}
+
+	user, err := h.uc.GetUserProfileByID(c, actorUserID, targetUserID)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, toProfileResponse(&user))
+}
+
+func (h *RBACHandler) UpdateUserProfile(c *gin.Context) {
+	actorUserID, ok := middleware.CurrentUserID(c)
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized", "missing authenticated user")
+		return
+	}
+
+	var req dto.UpdateUserProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "bad_request", "invalid json")
+		return
+	}
+
+	update := domain.UserProfileUpdate{
+		Email:    cleanOptional(req.Email),
+		Login:    firstOptional(cleanOptional(req.Login), cleanOptional(req.Name)),
+		Bio:      cleanOptional(req.Bio),
+		PhotoURL: firstOptional(cleanOptional(req.PhotoURL), cleanOptional(req.AvatarURL), cleanOptional(req.AvatarBase64)),
+	}
+	if update.Email != nil {
+		normalized := normalizeEmail(*update.Email)
+		if err := domain.ValidateEmail(normalized); err != nil {
+			respond.Error(c, http.StatusBadRequest, "validation", "invalid email")
+			return
+		}
+		update.Email = &normalized
+	}
+
+	user, err := h.uc.UpdateUserProfile(c, actorUserID, actorUserID, update)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, toProfileResponse(&user))
 }
 
 func (h *RBACHandler) GetUserRoles(c *gin.Context) {
@@ -159,4 +235,21 @@ func (h *RBACHandler) UpdateUserStatus(c *gin.Context) {
 	}
 
 	respond.JSON(c, http.StatusOK, toUserResponse(&user))
+}
+
+func cleanOptional(value *string) *string {
+	if value == nil {
+		return nil
+	}
+	cleaned := strings.TrimSpace(*value)
+	return &cleaned
+}
+
+func firstOptional(values ...*string) *string {
+	for _, value := range values {
+		if value != nil {
+			return value
+		}
+	}
+	return nil
 }
