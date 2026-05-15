@@ -5,6 +5,7 @@ import (
 	"auth-service/internal/http/dto"
 	"auth-service/internal/http/middleware"
 	"auth-service/internal/http/respond"
+	"auth-service/internal/service"
 	jwtlib "auth-service/internal/service/jwt"
 	"auth-service/internal/usecase"
 	"errors"
@@ -16,12 +17,28 @@ import (
 )
 
 type AuthHandler struct {
-	uc     *usecase.Auth
-	jwtMgr *jwtlib.Manager
+	uc           *usecase.Auth
+	jwtMgr       *jwtlib.Manager
+	googleOAuth  interface{}
+	gitHubOAuth  interface{}
 }
 
 func NewAuthHandler(uc *usecase.Auth, jwtMgr *jwtlib.Manager) *AuthHandler {
 	return &AuthHandler{uc: uc, jwtMgr: jwtMgr}
+}
+
+func NewAuthHandlerWithOAuth(
+	uc *usecase.Auth,
+	jwtMgr *jwtlib.Manager,
+	googleOAuth interface{},
+	gitHubOAuth interface{},
+) *AuthHandler {
+	return &AuthHandler{
+		uc:          uc,
+		jwtMgr:      jwtMgr,
+		googleOAuth: googleOAuth,
+		gitHubOAuth: gitHubOAuth,
+	}
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -286,4 +303,117 @@ func writeDomainError(c *gin.Context, err error) {
 
 func normalizeEmail(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
+}
+
+// GoogleAuthURL returns URL to redirect user to Google login
+// GET /auth/oauth/google/url
+func (h *AuthHandler) GoogleAuthURL(c *gin.Context) {
+	if h.googleOAuth == nil {
+		respond.Error(c, http.StatusNotImplemented, "not_implemented", "Google OAuth is not configured")
+		return
+	}
+
+	// Generate random state for CSRF protection
+	state := uuid.New().String()
+	
+	// Store state in session (in production, use proper session management)
+	c.SetCookie("oauth_state", state, 3600, "/", "", false, true)
+
+	provider := h.googleOAuth.(*service.GoogleProvider)
+	url := provider.GetAuthURL(state)
+
+	respond.PureJSON(c, http.StatusOK, gin.H{
+		"auth_url": url,
+	})
+}
+
+// GoogleCallback handles Google OAuth callback
+// POST /auth/oauth/google/callback
+// Body: {"code": "authorization_code"}
+func (h *AuthHandler) GoogleCallback(c *gin.Context) {
+	if h.googleOAuth == nil {
+		respond.Error(c, http.StatusNotImplemented, "not_implemented", "Google OAuth is not configured")
+		return
+	}
+
+	var req struct {
+		Code string `json:"code" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid_request", "code required")
+		return
+	}
+
+	// Exchange code for user info
+	provider := h.googleOAuth.(*service.GoogleProvider)
+	email, googleID, err := provider.ExchangeCode(c, req.Code)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "oauth_error", "failed to verify code")
+		return
+	}
+
+	// Handle OAuth callback (find or create user)
+	tokens, err := h.uc.HandleOAuthCallback(c, email, "google", googleID)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, tokens)
+}
+
+// GitHubAuthURL returns URL to redirect user to GitHub login
+// GET /auth/oauth/github/url
+func (h *AuthHandler) GitHubAuthURL(c *gin.Context) {
+	if h.gitHubOAuth == nil {
+		respond.Error(c, http.StatusNotImplemented, "not_implemented", "GitHub OAuth is not configured")
+		return
+	}
+
+	state := uuid.New().String()
+	c.SetCookie("oauth_state", state, 3600, "/", "", false, true)
+
+	provider := h.gitHubOAuth.(*service.GitHubProvider)
+	url := provider.GetAuthURL(state)
+
+	respond.PureJSON(c, http.StatusOK, gin.H{
+		"auth_url": url,
+	})
+}
+
+// GitHubCallback handles GitHub OAuth callback
+// POST /auth/oauth/github/callback
+// Body: {"code": "authorization_code"}
+func (h *AuthHandler) GitHubCallback(c *gin.Context) {
+	if h.gitHubOAuth == nil {
+		respond.Error(c, http.StatusNotImplemented, "not_implemented", "GitHub OAuth is not configured")
+		return
+	}
+
+	var req struct {
+		Code string `json:"code" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid_request", "code required")
+		return
+	}
+
+	// Exchange code for user info
+	provider := h.gitHubOAuth.(*service.GitHubProvider)
+	email, githubID, err := provider.ExchangeCode(c, req.Code)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "oauth_error", "failed to verify code")
+		return
+	}
+
+	// Handle OAuth callback
+	tokens, err := h.uc.HandleOAuthCallback(c, email, "github", githubID)
+	if err != nil {
+		writeDomainError(c, err)
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, tokens)
 }

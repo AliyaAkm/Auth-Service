@@ -44,3 +44,8 @@ func ValidatePassword(pw string) error {
 	}
 	return nil
 }
+
+// NormalizeEmail normalizes email for consistent comparison
+func NormalizeEmail(email string) string {
+	return strings.TrimSpace(strings.ToLower(email))
+}

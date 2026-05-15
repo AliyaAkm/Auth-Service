@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -81,13 +82,15 @@ func (r *UserRepo) CreateWithRoles(ctx context.Context, u domain.User, roleCodes
 func (r *UserRepo) FindByEmail(ctx context.Context, email string) (domain.User, bool) {
 	var u domain.User
 	err := r.db.QueryRow(ctx, `
-		SELECT id, email, password_hash, is_active, created_at
+		SELECT id, email, password_hash, oauth_provider, oauth_provider_id, is_active, created_at
 		FROM users
 		WHERE email = $1
 	`, email).Scan(
 		&u.ID,
 		&u.Email,
 		&u.PasswordHash,
+		&u.OAuthProvider,
+		&u.OAuthProviderID,
 		&u.IsActive,
 		&u.CreatedAt,
 	)
@@ -109,13 +112,15 @@ func (r *UserRepo) FindByEmail(ctx context.Context, email string) (domain.User, 
 func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (domain.User, bool) {
 	var u domain.User
 	err := r.db.QueryRow(ctx, `
-		SELECT id, email, password_hash, is_active, created_at
+		SELECT id, email, password_hash, oauth_provider, oauth_provider_id, is_active, created_at
 		FROM users
 		WHERE id = $1
 	`, id).Scan(
 		&u.ID,
 		&u.Email,
 		&u.PasswordHash,
+		&u.OAuthProvider,
+		&u.OAuthProviderID,
 		&u.IsActive,
 		&u.CreatedAt,
 	)
@@ -566,4 +571,66 @@ func scanRoles(rows pgx.Rows) ([]domain.Role, error) {
 	}
 
 	return roles, nil
+}
+
+// FindByOAuth finds user by OAuth provider and provider ID
+func (r *UserRepo) FindByOAuth(ctx context.Context, provider, providerID string) (domain.User, bool) {
+	var u domain.User
+	err := r.db.QueryRow(ctx, `
+		SELECT id, email, password_hash, oauth_provider, oauth_provider_id, is_active, created_at
+		FROM users
+		WHERE oauth_provider = $1 AND oauth_provider_id = $2
+	`, provider, providerID).Scan(
+		&u.ID,
+		&u.Email,
+		&u.PasswordHash,
+		&u.OAuthProvider,
+		&u.OAuthProviderID,
+		&u.IsActive,
+		&u.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, false
+		}
+		return domain.User{}, false
+	}
+
+	u.Roles, err = r.listUserRoles(ctx, r.db, u.ID)
+	if err != nil {
+		return domain.User{}, false
+	}
+
+	return u, true
+}
+
+// CreateOAuthUser creates a new user registered via OAuth
+func (r *UserRepo) CreateOAuthUser(ctx context.Context, email, provider, providerID string) error {
+	user := domain.User{
+		ID:              uuid.New(),
+		Email:           email,
+		OAuthProvider:   &provider,
+		OAuthProviderID: &providerID,
+		IsActive:        true,
+		CreatedAt:       time.Now(),
+	}
+
+	return r.CreateWithRoles(ctx, user, []string{domain.RoleStudent}, nil)
+}
+
+// LinkOAuth links an existing user with an OAuth provider
+func (r *UserRepo) LinkOAuth(ctx context.Context, userID uuid.UUID, provider, providerID string) error {
+	tag, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET oauth_provider = $2, oauth_provider_id = $3
+		WHERE id = $1 AND oauth_provider IS NULL
+	`, userID, provider, providerID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return errors.New("user not found or already linked to oauth")
+	}
+
+	return nil
 }

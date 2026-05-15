@@ -37,11 +37,19 @@ type SMTPConfig struct {
 	PasswordResetSubject string `env:"PASSWORD_RESET_SUBJECT" envDefault:"Password reset code"`
 }
 
+type OAuth2Config struct {
+	ClientID     string `env:"CLIENT_ID"`
+	ClientSecret string `env:"CLIENT_SECRET"`
+	RedirectURL  string `env:"REDIRECT_URL"`
+}
+
 type Config struct {
-	HTTPAddr string     `env:"HTTP_ADDR"`
-	DB       DbConfig   `envPrefix:"DB_"`
-	JWT      JWTConfig  `envPrefix:"JWT_"`
-	SMTP     SMTPConfig `envPrefix:"SMTP_"`
+	HTTPAddr string      `env:"HTTP_ADDR"`
+	DB       DbConfig    `envPrefix:"DB_"`
+	JWT      JWTConfig   `envPrefix:"JWT_"`
+	SMTP     SMTPConfig  `envPrefix:"SMTP_"`
+	Google   OAuth2Config `envPrefix:"GOOGLE_OAUTH_"`
+	GitHub   OAuth2Config `envPrefix:"GITHUB_OAUTH_"`
 }
 
 func ReadEnv() (*Config, error) {

@@ -6,6 +6,10 @@ func JSON(c *gin.Context, status int, v any) {
 	c.JSON(status, v)
 }
 
+func PureJSON(c *gin.Context, status int, v any) {
+	c.PureJSON(status, v)
+}
+
 // todo error struct code message
 
 func Error(c *gin.Context, status int, code, message string) {

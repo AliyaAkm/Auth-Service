@@ -32,6 +32,12 @@ func New(authH *handlers.AuthHandler, rbacH *handlers.RBACHandler, jwtMgr *jwtli
 		auth.POST("/refresh", authH.Refresh)
 		auth.POST("/logout", authH.Logout)
 		auth.GET("/me", authH.Me)
+
+		// OAuth endpoints
+		auth.GET("/oauth/google/url", authH.GoogleAuthURL)
+		auth.POST("/oauth/google/callback", authH.GoogleCallback)
+		auth.GET("/oauth/github/url", authH.GitHubAuthURL)
+		auth.POST("/oauth/github/callback", authH.GitHubCallback)
 	}
 
 	usersGroup := r.Group("/users")

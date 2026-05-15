@@ -70,7 +70,7 @@ func (a *Auth) Register(ctx context.Context, email, password string) (Tokens, er
 	u := domain.User{
 		ID:           a.uuidNew(),
 		Email:        email,
-		PasswordHash: pwHash,
+		PasswordHash: &pwHash,
 		Roles: []domain.Role{
 			{Code: domain.RoleStudent},
 		},
@@ -92,7 +92,11 @@ func (a *Auth) Login(ctx context.Context, email, password string) (Tokens, error
 	if !u.IsActive {
 		return Tokens{}, domain.ErrInactiveUser
 	}
-	if !a.hasher.Compare(u.PasswordHash, password) {
+	// OAuth users don't have password
+	if u.PasswordHash == nil {
+		return Tokens{}, domain.ErrInvalidCredentials
+	}
+	if !a.hasher.Compare(*u.PasswordHash, password) {
 		return Tokens{}, domain.ErrInvalidCredentials
 	}
 
@@ -229,7 +233,11 @@ func (a *Auth) ChangePassword(ctx context.Context, userID uuid.UUID, currentPass
 	if !user.IsActive {
 		return domain.ErrInactiveUser
 	}
-	if !a.hasher.Compare(user.PasswordHash, currentPassword) {
+	// OAuth users don't have password_hash, they can't change password this way
+	if user.PasswordHash == nil {
+		return domain.ErrValidation
+	}
+	if !a.hasher.Compare(*user.PasswordHash, currentPassword) {
 		return domain.ErrCurrentPassword
 	}
 
@@ -260,6 +268,57 @@ func (a *Auth) GetUserByID(ctx context.Context, userID uuid.UUID) (*domain.User,
 	}
 
 	return &user, nil
+}
+
+// HandleOAuthCallback processes OAuth callback: finds or creates user and issues tokens
+func (a *Auth) HandleOAuthCallback(ctx context.Context, email, provider, providerID string) (Tokens, error) {
+	// Normalize email
+	email = domain.NormalizeEmail(email)
+
+	// Validate email
+	if err := domain.ValidateEmail(email); err != nil {
+		return Tokens{}, domain.ErrValidation
+	}
+
+	// Try to find user by OAuth credentials
+	user, ok := a.users.FindByOAuth(ctx, provider, providerID)
+	if ok {
+		// User exists - check if active and return tokens
+		if !user.IsActive {
+			return Tokens{}, domain.ErrInactiveUser
+		}
+		return a.IssueTokens(ctx, user)
+	}
+
+	// User not found by OAuth - check if email already exists
+	existingUser, exists := a.users.FindByEmail(ctx, email)
+	if exists {
+		// Email already registered (via email/password or other OAuth)
+		// Check if it's already linked to another OAuth
+		if existingUser.OAuthProvider != nil {
+			return Tokens{}, domain.ErrEmailTaken
+		}
+
+		// Link account and return tokens
+		if err := a.users.LinkOAuth(ctx, existingUser.ID, provider, providerID); err != nil {
+			return Tokens{}, domain.ErrInternal
+		}
+		
+		return a.IssueTokens(ctx, existingUser)
+	}
+
+	// Create new OAuth user
+	if err := a.users.CreateOAuthUser(ctx, email, provider, providerID); err != nil {
+		return Tokens{}, domain.ErrInternal
+	}
+
+	// Fetch created user to get roles
+	newUser, ok := a.users.FindByOAuth(ctx, provider, providerID)
+	if !ok {
+		return Tokens{}, domain.ErrInternal
+	}
+
+	return a.IssueTokens(ctx, newUser)
 }
 
 func (a *Auth) IssueTokens(ctx context.Context, u domain.User) (Tokens, error) {

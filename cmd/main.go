@@ -2,6 +2,7 @@ package main
 
 import (
 	jwtlib "auth-service/internal/service/jwt"
+	"auth-service/internal/service"
 	"auth-service/internal/service/notification"
 	"context"
 	"errors"
@@ -87,7 +88,19 @@ func main() {
 	)
 	rbacUC := usecase.NewRBAC(userRepo)
 
-	authH := handlers.NewAuthHandler(authUC, jwtMgr)
+	// Initialize OAuth providers
+	googleOAuth := service.NewGoogleProvider(
+		cfg.Google.ClientID,
+		cfg.Google.ClientSecret,
+		cfg.Google.RedirectURL,
+	)
+	gitHubOAuth := service.NewGitHubProvider(
+		cfg.GitHub.ClientID,
+		cfg.GitHub.ClientSecret,
+		cfg.GitHub.RedirectURL,
+	)
+
+	authH := handlers.NewAuthHandlerWithOAuth(authUC, jwtMgr, googleOAuth, gitHubOAuth)
 	rbacH := handlers.NewRBACHandler(rbacUC)
 
 	engine := router.New(authH, rbacH, jwtMgr, logger)
