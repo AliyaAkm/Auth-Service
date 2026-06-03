@@ -1886,7 +1886,7 @@ func (c *Conn) handleCloseError(closeErr *closeError) {
 	// In rare instances, the connection ID manager might switch to a new connection ID
 	// when sending the CONNECTION_CLOSE frame.
 	// The connection ID manager removes the active stateless reset token from the packet
-	// handler map when it is closed, so we need to make sure that this happens last.
+	// handlers map when it is closed, so we need to make sure that this happens last.
 	defer c.connIDManager.Close()
 
 	if c.tracer != nil && c.tracer.ClosedConnection != nil && !errors.As(e, &recreateErr) {

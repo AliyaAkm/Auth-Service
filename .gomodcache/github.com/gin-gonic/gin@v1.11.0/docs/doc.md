@@ -134,7 +134,7 @@ func main() {
 func main() {
   router := gin.Default()
 
-  // This handler will match /user/john but will not match /user/ or /user
+  // This handlers will match /user/john but will not match /user/ or /user
   router.GET("/user/:name", func(c *gin.Context) {
     name := c.Param("name")
     c.String(http.StatusOK, "Hello %s", name)
@@ -155,7 +155,7 @@ func main() {
     c.String(http.StatusOK, "%t", b)
   })
 
-  // This handler will add a new router for /user/groups.
+  // This handlers will add a new router for /user/groups.
   // Exact routes are resolved before param routes, regardless of the order they were defined.
   // Routes starting with /user/groups are never interpreted as /user/:name/... routes
   router.GET("/user/groups", func(c *gin.Context) {
@@ -1739,7 +1739,7 @@ import (
 func main() {
   r := gin.Default()
 
-  // Ping handler
+  // Ping handlers
   r.GET("/ping", func(c *gin.Context) {
     c.String(http.StatusOK, "pong")
   })
@@ -1765,7 +1765,7 @@ import (
 func main() {
   r := gin.Default()
 
-  // Ping handler
+  // Ping handlers
   r.GET("/ping", func(c *gin.Context) {
     c.String(http.StatusOK, "pong")
   })

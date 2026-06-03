@@ -594,7 +594,7 @@ func TestRouterNotFound(t *testing.T) {
 		}
 	}
 
-	// Test custom not found handler
+	// Test custom not found handlers
 	var notFound bool
 	router.NoRoute(func(c *Context) {
 		c.AbortWithStatus(http.StatusNotFound)

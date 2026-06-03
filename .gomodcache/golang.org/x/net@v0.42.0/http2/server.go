@@ -16,7 +16,7 @@
 
 // TODO (maybe): add a mechanism for Handlers to going into
 // half-closed-local mode (rw.(io.Closer) test?) but not exit their
-// handler, and continue to be able to read from the
+// handlers, and continue to be able to read from the
 // Request.Body. This would be a somewhat semantic change from HTTP/1
 // (or at least what we expose in net/http), so I'd probably want to
 // add it there too. For now, this package says that returning from
@@ -67,8 +67,8 @@ const (
 
 var (
 	errClientDisconnected = errors.New("client disconnected")
-	errClosedBody         = errors.New("body closed by handler")
-	errHandlerComplete    = errors.New("http2: request body closed due to handler exiting")
+	errClosedBody         = errors.New("body closed by handlers")
+	errHandlerComplete    = errors.New("http2: request body closed due to handlers exiting")
 	errStreamClosed       = errors.New("http2: stream closed")
 )
 
@@ -362,7 +362,7 @@ type ServeConnOpts struct {
 	// for values. If nil, defaults are used.
 	BaseConfig *http.Server
 
-	// Handler specifies which handler to use for processing
+	// Handler specifies which handlers to use for processing
 	// requests. If nil, BaseConfig.Handler is used. If BaseConfig
 	// or BaseConfig.Handler is nil, http.DefaultServeMux is used.
 	Handler http.Handler
@@ -669,7 +669,7 @@ func (sc *serverConn) curOpenStreams() uint32 {
 // the serve goroutine. Most of the actual stream state is owned by
 // the http.Handler's goroutine in the responseWriter. Because the
 // responseWriter's responseWriterState is recycled at the end of a
-// handler, this struct intentionally has no pointer to the
+// handlers, this struct intentionally has no pointer to the
 // *responseWriter{,State} itself, as the Handler ending nils out the
 // responseWriter's state field.
 type stream struct {
@@ -695,7 +695,7 @@ type stream struct {
 	closeErr         error // set before cw is closed
 
 	trailer    http.Header // accumulated trailers
-	reqTrailer http.Header // handler's Request.Trailer
+	reqTrailer http.Header // handlers's Request.Trailer
 }
 
 func (sc *serverConn) Framer() *Framer  { return sc.framer }
@@ -1244,12 +1244,12 @@ func (sc *serverConn) writeFrame(wr FrameWriteRequest) {
 	// a closed stream." Our server never sends PRIORITY, so that exception
 	// does not apply.
 	//
-	// The serverConn might close an open stream while the stream's handler
+	// The serverConn might close an open stream while the stream's handlers
 	// is still running. For example, the server might close a stream when it
-	// receives bad data from the client. If this happens, the handler might
+	// receives bad data from the client. If this happens, the handlers might
 	// attempt to write a frame after the stream has been closed (since the
-	// handler hasn't yet been notified of the close). In this case, we simply
-	// ignore the frame. The handler will notice that the stream is closed when
+	// handlers hasn't yet been notified of the close). In this case, we simply
+	// ignore the frame. The handlers will notice that the stream is closed when
 	// it waits for the frame to be written.
 	//
 	// As an exception to this rule, we allow sending RST_STREAM after close.
@@ -1350,7 +1350,7 @@ func (sc *serverConn) startFrameWrite(wr FrameWriteRequest) {
 // errHandlerPanicked is the error given to any callers blocked in a read from
 // Request.Body when the main goroutine panics. Since most handlers read in the
 // main ServeHTTP goroutine, this will show up rarely.
-var errHandlerPanicked = errors.New("http2: handler panicked")
+var errHandlerPanicked = errors.New("http2: handlers panicked")
 
 // wroteFrame is called on the serve goroutine with the result of
 // whatever happened on writeFrameAsync.
@@ -1376,7 +1376,7 @@ func (sc *serverConn) wroteFrame(res frameWriteResult) {
 		switch st.state {
 		case stateOpen:
 			// Here we would go to stateHalfClosedLocal in
-			// theory, but since our handler is done and
+			// theory, but since our handlers is done and
 			// the net/http package provides no mechanism
 			// for closing a ResponseWriter while still
 			// reading data (see possible TODO at top of
@@ -1921,7 +1921,7 @@ func (sc *serverConn) processData(f *DataFrame) error {
 			st.bodyBytes += int64(len(data))
 			wrote, err := st.body.Write(data)
 			if err != nil {
-				// The handler has closed the request body.
+				// The handlers has closed the request body.
 				// Return the connection-level flow control for the discarded data,
 				// but not the stream-level flow control.
 				sc.sendWindowUpdate(nil, int(f.Length)-wrote)
@@ -2142,7 +2142,7 @@ func (sc *serverConn) upgradeRequest(req *http.Request) {
 	}
 
 	// This is the first request on the connection,
-	// so start the handler directly rather than going
+	// so start the handlers directly rather than going
 	// through scheduleHandler.
 	sc.curHandlers++
 	go sc.runHandler(rw, req, sc.handler.ServeHTTP)
@@ -2451,8 +2451,8 @@ func (sc *serverConn) writeHeaders(st *stream, headerData *writeResHeaders) erro
 	var errc chan error
 	if headerData.h != nil {
 		// If there's a header map (which we don't own), so we have to block on
-		// waiting for this frame to be written, so an http.Flush mid-handler
-		// writes out the correct value of keys, before a handler later potentially
+		// waiting for this frame to be written, so an http.Flush mid-handlers
+		// writes out the correct value of keys, before a handlers later potentially
 		// mutates it.
 		errc = errChanPool.Get().(chan error)
 	}
@@ -2613,9 +2613,9 @@ type responseWriterState struct {
 	status        int         // status code passed to WriteHeader
 	wroteHeader   bool        // WriteHeader called (explicitly or implicitly). Not necessarily sent to user yet.
 	sentHeader    bool        // have we sent the header frame?
-	handlerDone   bool        // handler has finished
+	handlerDone   bool        // handlers has finished
 
-	sentContentLen int64 // non-zero if handler set a Content-Length header
+	sentContentLen int64 // non-zero if handlers set a Content-Length header
 	wroteBytes     int64
 
 	closeNotifierMu sync.Mutex // guards closeNotifierCh
@@ -2747,7 +2747,7 @@ func (rws *responseWriterState) writeChunk(p []byte) (n int, err error) {
 	}
 
 	// only send trailers if they have actually been defined by the
-	// server handler.
+	// server handlers.
 	hasNonemptyTrailers := rws.hasNonemptyTrailers()
 	endStream := rws.handlerDone && !hasNonemptyTrailers
 	if len(p) > 0 || endStream {
@@ -3042,7 +3042,7 @@ func (w *responseWriter) write(lenData int, dataB []byte, dataS string) (n int, 
 	rws.wroteBytes += int64(len(dataB)) + int64(len(dataS)) // only one can be set
 	if rws.sentContentLen != 0 && rws.wroteBytes > rws.sentContentLen {
 		// TODO: send a RST_STREAM
-		return 0, errors.New("http2: handler wrote more than declared Content-Length")
+		return 0, errors.New("http2: handlers wrote more than declared Content-Length")
 	}
 
 	if dataB != nil {
@@ -3197,7 +3197,7 @@ func (sc *serverConn) startPush(msg *startPushRequest) {
 
 	// PUSH_PROMISE frames must be sent in increasing order by stream ID, so
 	// we allocate an ID for the promised stream lazily, when the PUSH_PROMISE
-	// is written. Once the ID is allocated, we start the request handler.
+	// is written. Once the ID is allocated, we start the request handlers.
 	allocatePromisedID := func() (uint32, error) {
 		sc.serveG.check()
 
@@ -3233,7 +3233,7 @@ func (sc *serverConn) startPush(msg *startPushRequest) {
 			Scheme:    msg.url.Scheme,
 			Authority: msg.url.Host,
 			Path:      msg.url.RequestURI(),
-			Header:    cloneHeader(msg.header), // clone since handler runs concurrently with writing the PUSH_PROMISE
+			Header:    cloneHeader(msg.header), // clone since handlers runs concurrently with writing the PUSH_PROMISE
 		})
 		if err != nil {
 			// Should not happen, since we've already validated msg.url.

@@ -35,7 +35,7 @@ type RefreshRepository interface {
 }
 
 type TokenIssuer interface {
-	NewAccessToken(userID uuid.UUID, primaryRole string, roles []string, isActive bool) (string, error)
+	NewAccessToken(userID uuid.UUID, primaryRole string, roles []string, login string, isActive bool) (string, error)
 	VerifyAccessToken(tokenStr string) (*jwt.Claims, error)
 }
 

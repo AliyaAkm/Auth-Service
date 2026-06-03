@@ -719,7 +719,7 @@ func TestTransportBody(t *testing.T) {
 			wantLen = -1
 		}
 		if ri.req.ContentLength != wantLen {
-			t.Errorf("#%d. handler got ContentLength = %v; want %v", i, ri.req.ContentLength, wantLen)
+			t.Errorf("#%d. handlers got ContentLength = %v; want %v", i, ri.req.ContentLength, wantLen)
 		}
 	}
 }
@@ -2372,9 +2372,9 @@ func (b neverEnding) Read(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// golang.org/issue/15425: test that a handler closing the request
+// golang.org/issue/15425: test that a handlers closing the request
 // body doesn't terminate the stream to the peer. (It just stops
-// readability from the handler's side, and eventually the client
+// readability from the handlers's side, and eventually the client
 // runs out of flow control tokens)
 func TestTransportHandlerBodyClose(t *testing.T) {
 	const bodySize = 10 << 20
@@ -5281,7 +5281,7 @@ func TestTransportDialTLSContext(t *testing.T) {
 		}
 		res.Body.Close()
 	}()
-	// Wait for GetClientCertificate handler to be called
+	// Wait for GetClientCertificate handlers to be called
 	<-blockCh
 	// Cancel the context
 	cancel()
@@ -5365,7 +5365,7 @@ func TestDialRaceResumesDial(t *testing.T) {
 		// made it to the server successfully.
 		close(successCh)
 	}()
-	// Wait for GetClientCertificate handler to be called
+	// Wait for GetClientCertificate handlers to be called
 	<-blockCh
 	// Cancel the context first
 	cancel1()

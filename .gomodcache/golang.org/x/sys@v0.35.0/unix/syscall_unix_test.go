@@ -599,7 +599,7 @@ func TestSelect(t *testing.T) {
 	// On some platforms (e.g. NetBSD) the actual timeout might be arbitrarily
 	// less than requested. However, Linux in particular promises to only return
 	// early if a file descriptor becomes ready (not applicable here), or the call
-	// is interrupted by a signal handler (explicitly retried in the loop above),
+	// is interrupted by a signal handlers (explicitly retried in the loop above),
 	// or the timeout expires.
 	if took < dur {
 		if runtime.GOOS == "linux" {

@@ -78,7 +78,7 @@ type CustomClaimsExample struct {
 }
 
 func Example_getTokenViaHTTP() {
-	// See func authHandler for an example auth handler that produces a token
+	// See func authHandler for an example auth handlers that produces a token
 	res, err := http.PostForm(fmt.Sprintf("http://localhost:%v/authenticate", serverPort), url.Values{
 		"user": {"test"},
 		"pass": {"known"},

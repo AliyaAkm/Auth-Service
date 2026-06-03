@@ -21,7 +21,7 @@ and read like func declarations if //sys is replaced by func, but:
 
 
 This program will generate three files and handle both gc and gccgo implementation:
-  - zsyscall_aix_ppc64.go: the common part of each implementation (error handler, pointer creation)
+  - zsyscall_aix_ppc64.go: the common part of each implementation (error handlers, pointer creation)
   - zsyscall_aix_ppc64_gc.go: gc part with //go_cgo_import_dynamic and a call to syscall6
   - zsyscall_aix_ppc64_gccgo.go: gccgo part with C function and conversion to C type.
 

@@ -29,7 +29,7 @@
 // language tags.
 // The MatchString finds best matches for such strings:
 //
-//	handler(w http.ResponseWriter, r *http.Request) {
+//	handlers(w http.ResponseWriter, r *http.Request) {
 //	    lang, _ := r.Cookie("lang")
 //	    accept := r.Header.Get("Accept-Language")
 //	    tag, _ := language.MatchStrings(matcher, lang.String(), accept)

@@ -41,7 +41,7 @@ var buckets = []bucket{
 // RenderEvents renders the HTML page typically served at /debug/events.
 // It does not do any auth checking. The request may be nil.
 //
-// Most users will use the Events handler.
+// Most users will use the Events handlers.
 func RenderEvents(w http.ResponseWriter, req *http.Request, sensitive bool) {
 	now := time.Now()
 	data := &struct {

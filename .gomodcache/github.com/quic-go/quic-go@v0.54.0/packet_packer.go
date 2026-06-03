@@ -704,7 +704,7 @@ func (p *packetPacker) composeNextPacket(
 				// Path probing is currently not supported, therefore we don't need to set the OnAcked callback yet.
 				// PATH_CHALLENGE and PATH_RESPONSE are never retransmitted.
 			default:
-				// we might be packing a 0-RTT packet, but we need to use the 1-RTT ack handler anyway
+				// we might be packing a 0-RTT packet, but we need to use the 1-RTT ack handlers anyway
 				pl.frames[i].Handler = p.retransmissionQueue.AckHandler(protocol.Encryption1RTT)
 			}
 		}

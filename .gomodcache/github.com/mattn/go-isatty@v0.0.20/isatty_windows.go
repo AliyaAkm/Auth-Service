@@ -75,7 +75,7 @@ func isCygwinPipeName(name string) bool {
 	return true
 }
 
-// getFileNameByHandle use the undocomented ntdll NtQueryObject to get file full name from file handler
+// getFileNameByHandle use the undocomented ntdll NtQueryObject to get file full name from file handlers
 // since GetFileInformationByHandleEx is not available under windows Vista and still some old fashion
 // guys are using Windows XP, this is a workaround for those guys, it will also work on system from
 // Windows vista to 10

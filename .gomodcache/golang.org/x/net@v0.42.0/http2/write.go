@@ -114,8 +114,8 @@ func (w *writeData) staysWithinBuffer(max int) bool {
 	return frameHeaderLen+len(w.p) <= max
 }
 
-// handlerPanicRST is the message sent from handler goroutines when
-// the handler panics.
+// handlerPanicRST is the message sent from handlers goroutines when
+// the handlers panics.
 type handlerPanicRST struct {
 	StreamID uint32
 }
@@ -186,7 +186,7 @@ func splitHeaderBlock(ctx writeContext, headerBlock []byte, fn func(ctx writeCon
 }
 
 // writeResHeaders is a request to write a HEADERS and 0+ CONTINUATION frames
-// for HTTP response headers or trailers from a server handler.
+// for HTTP response headers or trailers from a server handlers.
 type writeResHeaders struct {
 	streamID    uint32
 	httpResCode int         // 0 means no ":status" line

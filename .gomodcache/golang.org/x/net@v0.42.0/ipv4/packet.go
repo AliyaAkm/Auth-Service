@@ -13,7 +13,7 @@ import (
 // BUG(mikio): On Windows, the ReadFrom and WriteTo methods of RawConn
 // are not implemented.
 
-// A packetHandler represents the IPv4 datagram handler.
+// A packetHandler represents the IPv4 datagram handlers.
 type packetHandler struct {
 	*net.IPConn
 	*socket.Conn

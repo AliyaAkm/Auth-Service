@@ -49,7 +49,7 @@ var defaultTrustedCIDRs = []*net.IPNet{
 var regSafePrefix = regexp.MustCompile("[^a-zA-Z0-9/-]+")
 var regRemoveRepeatedChar = regexp.MustCompile("/{2,}")
 
-// HandlerFunc defines the handler used by gin middleware as return value.
+// HandlerFunc defines the handlers used by gin middleware as return value.
 type HandlerFunc func(*Context)
 
 // OptionFunc defines the function to change the default configuration
@@ -58,7 +58,7 @@ type OptionFunc func(*Engine)
 // HandlersChain defines a HandlerFunc slice.
 type HandlersChain []HandlerFunc
 
-// Last returns the last handler in the chain. i.e. the last handler is the main one.
+// Last returns the last handlers in the chain. i.e. the last handlers is the main one.
 func (c HandlersChain) Last() HandlerFunc {
 	if length := len(c); length > 0 {
 		return c[length-1]
@@ -66,7 +66,7 @@ func (c HandlersChain) Last() HandlerFunc {
 	return nil
 }
 
-// RouteInfo represents a request route's specification which contains method and path and its handler.
+// RouteInfo represents a request route's specification which contains method and path and its handlers.
 type RouteInfo struct {
 	Method      string
 	Path        string
@@ -95,7 +95,7 @@ type Engine struct {
 	RouterGroup
 
 	// RedirectTrailingSlash enables automatic redirection if the current route can't be matched but a
-	// handler for the path with (without) the trailing slash exists.
+	// handlers for the path with (without) the trailing slash exists.
 	// For example if /foo/ is requested but a route only exists for /foo, the
 	// client is redirected to /foo with http status code 301 for GET requests
 	// and 307 for all other request methods.
@@ -117,7 +117,7 @@ type Engine struct {
 	// If this is the case, the request is answered with 'Method Not Allowed'
 	// and HTTP status code 405.
 	// If no other Method is allowed, the request is delegated to the NotFound
-	// handler.
+	// handlers.
 	HandleMethodNotAllowed bool
 
 	// ForwardedByClientIP if enabled, client IP will be parsed from the request's headers that
@@ -354,7 +354,7 @@ func (engine *Engine) rebuild405Handlers() {
 func (engine *Engine) addRoute(method, path string, handlers HandlersChain) {
 	assert1(path[0] == '/', "path must begin with '/'")
 	assert1(method != "", "HTTP method can not be empty")
-	assert1(len(handlers) > 0, "there must be at least one handler")
+	assert1(len(handlers) > 0, "there must be at least one handlers")
 
 	debugPrintRoute(method, path, handlers)
 
@@ -376,7 +376,7 @@ func (engine *Engine) addRoute(method, path string, handlers HandlersChain) {
 }
 
 // Routes returns a slice of registered routes, including some useful information, such as:
-// the http method, path, and the handler name.
+// the http method, path, and the handlers name.
 func (engine *Engine) Routes() (routes RoutesInfo) {
 	for _, tree := range engine.trees {
 		routes = iterate("", tree.method, routes, tree.root)

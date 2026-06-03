@@ -52,7 +52,7 @@ type Config struct {
 	NoProxy string
 
 	// CGI holds whether the current process is running
-	// as a CGI handler (FromEnvironment infers this from the
+	// as a CGI handlers (FromEnvironment infers this from the
 	// presence of a REQUEST_METHOD environment variable).
 	// When this is set, ProxyForURL will return an error
 	// when HTTPProxy applies, because a client could be

@@ -278,7 +278,7 @@ loop:
 	return windows.NO_ERROR
 }
 
-// Run executes service name by calling appropriate handler function.
+// Run executes service name by calling appropriate handlers function.
 func Run(name string, handler Handler) error {
 	// Check to make sure that the service name is valid.
 	namePointer, err := windows.UTF16PtrFromString(name)

@@ -39,7 +39,7 @@ type responseWriter struct {
 	// and automatically add the Content-Length header
 	smallResponseBuf []byte
 
-	contentLen     int64 // if handler set valid Content-Length header
+	contentLen     int64 // if handlers set valid Content-Length header
 	numWritten     int64 // bytes written
 	headerComplete bool  // set once WriteHeader is called with a status code >= 200
 	headerWritten  bool  // set once the response header has been serialized to the stream

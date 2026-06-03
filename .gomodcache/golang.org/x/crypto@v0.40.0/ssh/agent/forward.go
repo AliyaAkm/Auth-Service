@@ -31,7 +31,7 @@ func RequestAgentForwarding(session *ssh.Session) error {
 func ForwardToAgent(client *ssh.Client, keyring Agent) error {
 	channels := client.HandleChannelOpen(channelType)
 	if channels == nil {
-		return errors.New("agent: already have handler for " + channelType)
+		return errors.New("agent: already have handlers for " + channelType)
 	}
 
 	go func() {
@@ -57,7 +57,7 @@ const channelType = "auth-agent@openssh.com"
 func ForwardToRemote(client *ssh.Client, addr string) error {
 	channels := client.HandleChannelOpen(channelType)
 	if channels == nil {
-		return errors.New("agent: already have handler for " + channelType)
+		return errors.New("agent: already have handlers for " + channelType)
 	}
 	conn, err := net.Dial("unix", addr)
 	if err != nil {

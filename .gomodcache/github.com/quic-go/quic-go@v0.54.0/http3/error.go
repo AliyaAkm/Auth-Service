@@ -8,7 +8,7 @@ import (
 )
 
 // Error is returned from the round tripper (for HTTP clients)
-// and inside the HTTP handler (for HTTP servers) if an HTTP/3 error occurs.
+// and inside the HTTP handlers (for HTTP servers) if an HTTP/3 error occurs.
 // See section 8 of RFC 9114.
 type Error struct {
 	Remote       bool

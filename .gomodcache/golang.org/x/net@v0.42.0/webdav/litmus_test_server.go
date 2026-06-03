@@ -57,7 +57,7 @@ func main() {
 
 	// The next line would normally be:
 	//	http.Handle("/", h)
-	// but we wrap that HTTP handler h to cater for a special case.
+	// but we wrap that HTTP handlers h to cater for a special case.
 	//
 	// The propfind_invalid2 litmus test case expects an empty namespace prefix
 	// declaration to be an error. The FAQ in the webdav litmus test says:

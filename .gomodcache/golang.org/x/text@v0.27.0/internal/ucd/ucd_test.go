@@ -47,7 +47,7 @@ func TestGetters(t *testing.T) {
 	}
 	handler := func(p *Parser) {
 		if len(parts) == 0 {
-			t.Error("Part handler invoked too many times.")
+			t.Error("Part handlers invoked too many times.")
 			return
 		}
 		want := parts[0]
@@ -100,6 +100,6 @@ func TestGetters(t *testing.T) {
 		t.Errorf("Parser error: %v", err)
 	}
 	if len(parts) != 0 {
-		t.Errorf("expected %d more invocations of part handler", len(parts))
+		t.Errorf("expected %d more invocations of part handlers", len(parts))
 	}
 }

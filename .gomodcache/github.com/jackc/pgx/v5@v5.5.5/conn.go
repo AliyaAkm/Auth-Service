@@ -249,7 +249,7 @@ func connect(ctx context.Context, config *ConnConfig) (c *Conn, err error) {
 		c.prepareTracer = t
 	}
 
-	// Only install pgx notification system if no other callback handler is present.
+	// Only install pgx notification system if no other callback handlers is present.
 	if config.Config.OnNotification == nil {
 		config.Config.OnNotification = c.bufferNotifications
 	}

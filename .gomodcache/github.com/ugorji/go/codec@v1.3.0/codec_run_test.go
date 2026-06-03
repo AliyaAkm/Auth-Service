@@ -431,7 +431,7 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 
 // ----
 
-// timeExt is an extension handler for time.Time, that uses binc model for encoding/decoding time.
+// timeExt is an extension handlers for time.Time, that uses binc model for encoding/decoding time.
 // we used binc model, as that is the only custom time representation that we designed ourselves.
 type timeBytesExt struct{}
 

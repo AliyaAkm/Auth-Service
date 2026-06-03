@@ -91,7 +91,7 @@ func (group *RouterGroup) handle(httpMethod, relativePath string, handlers Handl
 }
 
 // Handle registers a new request handle and middleware with the given path and method.
-// The last handler should be the real handler, the other ones should be middleware that can and should be shared among different routes.
+// The last handlers should be the real handlers, the other ones should be middleware that can and should be shared among different routes.
 // See the example code in GitHub.
 //
 // For GET, POST, PUT, PATCH and DELETE requests the respective shortcut
@@ -189,7 +189,7 @@ func (group *RouterGroup) staticFileHandler(relativePath string, handler Handler
 
 // Static serves files from the given file system root.
 // Internally a http.FileServer is used, therefore http.NotFound is used instead
-// of the Router's NotFound handler.
+// of the Router's NotFound handlers.
 // To use the operating system's file system implementation,
 // use :
 //

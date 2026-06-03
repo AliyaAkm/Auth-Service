@@ -645,7 +645,7 @@ func TestTreeTrailingSlashRedirect(t *testing.T) {
 	for _, route := range tsrRoutes {
 		value := tree.getValue(route, nil, getSkippedNodes(), false)
 		if value.handlers != nil {
-			t.Fatalf("non-nil handler for TSR route '%s", route)
+			t.Fatalf("non-nil handlers for TSR route '%s", route)
 		} else if !value.tsr {
 			t.Errorf("expected TSR recommendation for route '%s'", route)
 		}
@@ -666,7 +666,7 @@ func TestTreeTrailingSlashRedirect(t *testing.T) {
 	for _, route := range noTsrRoutes {
 		value := tree.getValue(route, nil, getSkippedNodes(), false)
 		if value.handlers != nil {
-			t.Fatalf("non-nil handler for No-TSR route '%s", route)
+			t.Fatalf("non-nil handlers for No-TSR route '%s", route)
 		} else if value.tsr {
 			t.Errorf("expected no TSR recommendation for route '%s'", route)
 		}
@@ -685,7 +685,7 @@ func TestTreeRootTrailingSlashRedirect(t *testing.T) {
 
 	value := tree.getValue("/", nil, getSkippedNodes(), false)
 	if value.handlers != nil {
-		t.Fatalf("non-nil handler")
+		t.Fatalf("non-nil handlers")
 	} else if value.tsr {
 		t.Errorf("expected no TSR recommendation")
 	}

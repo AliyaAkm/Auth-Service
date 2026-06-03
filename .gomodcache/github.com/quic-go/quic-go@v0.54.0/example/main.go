@@ -32,7 +32,7 @@ func (b *binds) Set(v string) error {
 	return nil
 }
 
-// Size is needed by the /demo/upload handler to determine the size of the uploaded file
+// Size is needed by the /demo/upload handlers to determine the size of the uploaded file
 type Size interface {
 	Size() int64
 }

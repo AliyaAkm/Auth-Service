@@ -604,7 +604,7 @@ func (d *decoder) handleKeyValues(v reflect.Value) (reflect.Value, error) {
 		expr := d.expr()
 		if expr.Kind != unstable.KeyValue {
 			// Stash the expression so that fromParser can just loop and use
-			// the right handler.
+			// the right handlers.
 			// We could just recurse ourselves here, but at least this gives a
 			// chance to pop the stack a bit.
 			d.stashExpr()

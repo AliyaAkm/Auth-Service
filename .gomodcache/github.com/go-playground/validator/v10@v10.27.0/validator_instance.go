@@ -66,7 +66,7 @@ var (
 // validation
 type FilterFunc func(ns []byte) bool
 
-// CustomTypeFunc allows for overriding or adding custom field type handler functions
+// CustomTypeFunc allows for overriding or adding custom field type handlers functions
 // field = field value of the type to return a value to be validated
 // example Valuer from sql drive see https://golang.org/src/database/sql/driver/types.go?s=1210:1293#L29
 type CustomTypeFunc func(field reflect.Value) interface{}
@@ -583,7 +583,7 @@ func (v *Validate) StructExceptCtx(ctx context.Context, s interface{}, fields ..
 // validate.Var(i, "gt=1,lt=10")
 //
 // WARNING: a struct can be passed for validation eg. time.Time is a struct or
-// if you have a custom type and have registered a custom type handler, so must
+// if you have a custom type and have registered a custom type handlers, so must
 // allow it; however unforeseen validations will occur if trying to validate a
 // struct that is meant to be passed to 'validate.Struct'
 //
@@ -601,7 +601,7 @@ func (v *Validate) Var(field interface{}, tag string) error {
 // validate.Var(i, "gt=1,lt=10")
 //
 // WARNING: a struct can be passed for validation eg. time.Time is a struct or
-// if you have a custom type and have registered a custom type handler, so must
+// if you have a custom type and have registered a custom type handlers, so must
 // allow it; however unforeseen validations will occur if trying to validate a
 // struct that is meant to be passed to 'validate.Struct'
 //
@@ -636,7 +636,7 @@ func (v *Validate) VarCtx(ctx context.Context, field interface{}, tag string) (e
 // validate.VarWithValue(s1, s2, "eqcsfield") // returns true
 //
 // WARNING: a struct can be passed for validation eg. time.Time is a struct or
-// if you have a custom type and have registered a custom type handler, so must
+// if you have a custom type and have registered a custom type handlers, so must
 // allow it; however unforeseen validations will occur if trying to validate a
 // struct that is meant to be passed to 'validate.Struct'
 //
@@ -655,7 +655,7 @@ func (v *Validate) VarWithValue(field interface{}, other interface{}, tag string
 // validate.VarWithValue(s1, s2, "eqcsfield") // returns true
 //
 // WARNING: a struct can be passed for validation eg. time.Time is a struct or
-// if you have a custom type and have registered a custom type handler, so must
+// if you have a custom type and have registered a custom type handlers, so must
 // allow it; however unforeseen validations will occur if trying to validate a
 // struct that is meant to be passed to 'validate.Struct'
 //

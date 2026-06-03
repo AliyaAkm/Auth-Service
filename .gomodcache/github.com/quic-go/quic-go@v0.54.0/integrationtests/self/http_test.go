@@ -298,7 +298,7 @@ func TestHTTPErrAbortHandler(t *testing.T) {
 	respChan := make(chan struct{})
 	mux := http.NewServeMux()
 	mux.HandleFunc("/abort", func(w http.ResponseWriter, r *http.Request) {
-		// no recover here as it will interfere with the handler
+		// no recover here as it will interfere with the handlers
 		io.WriteString(w, "foobar")
 		w.(http.Flusher).Flush()
 		// wait for the client to receive the response
@@ -490,7 +490,7 @@ func TestHTTPClientRequestContextCancellation(t *testing.T) {
 			require.Equal(t, http3.ErrCodeRequestCanceled, http3Err.ErrorCode)
 			require.True(t, http3Err.Remote)
 		case <-time.After(time.Second):
-			t.Fatal("handler was not called")
+			t.Fatal("handlers was not called")
 		}
 
 		_, err = resp.Body.Read([]byte{0})
@@ -542,7 +542,7 @@ func TestHTTPDeadlines(t *testing.T) {
 			require.ErrorIs(t, result.err, os.ErrDeadlineExceeded)
 			require.Contains(t, string(result.body), "aa")
 		default:
-			t.Fatal("handler was not called")
+			t.Fatal("handlers was not called")
 		}
 	})
 
@@ -571,7 +571,7 @@ func TestHTTPDeadlines(t *testing.T) {
 		case err := <-errChan:
 			require.ErrorIs(t, err, os.ErrDeadlineExceeded)
 		case <-time.After(2 * deadlineDelay):
-			t.Fatal("handler was not called")
+			t.Fatal("handlers was not called")
 		}
 	})
 }
@@ -696,7 +696,7 @@ func TestHTTPConnContext(t *testing.T) {
 		require.True(t, ok)
 		tracingID = id
 	default:
-		t.Fatal("handler was not called")
+		t.Fatal("handlers was not called")
 	}
 
 	select {
@@ -713,7 +713,7 @@ func TestHTTPConnContext(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, tracingID, id)
 	default:
-		t.Fatal("handler was not called")
+		t.Fatal("handlers was not called")
 	}
 }
 
@@ -736,7 +736,7 @@ func TestHTTPRemoteAddrContextKey(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, "127.0.0.1", ctx.Value(http3.RemoteAddrContextKey).(*net.UDPAddr).IP.String())
 	default:
-		t.Fatal("handler was not called")
+		t.Fatal("handlers was not called")
 	}
 }
 
@@ -785,7 +785,7 @@ func TestHTTPStreamedRequests(t *testing.T) {
 	case err := <-errChan:
 		require.NoError(t, err)
 	case <-time.After(time.Second):
-		t.Fatal("handler did not complete")
+		t.Fatal("handlers did not complete")
 	}
 }
 
@@ -938,7 +938,7 @@ func TestHTTPStreamer(t *testing.T) {
 		str := w.(http3.HTTPStreamer).HTTPStream()
 		str.Write([]byte("foobar"))
 
-		// Do this in a Go routine, so that the handler returns early.
+		// Do this in a Go routine, so that the handlers returns early.
 		// This way, we can also check that the HTTP/3 doesn't close the stream.
 		go func() {
 			defer str.Close()

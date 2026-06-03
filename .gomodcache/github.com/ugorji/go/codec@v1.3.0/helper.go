@@ -969,7 +969,7 @@ type BasicHandle struct {
 	ExplicitRelease bool
 
 	// ---- cache line
-	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
+	inited uint32 // holds if inited, and also handle flags (binary encoding, json handlers, etc)
 
 	// name string
 }

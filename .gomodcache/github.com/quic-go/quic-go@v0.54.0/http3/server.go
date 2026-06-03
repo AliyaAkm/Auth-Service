@@ -75,7 +75,7 @@ func (k *contextKey) String() string { return "quic-go/http3 context value " + k
 
 // ServerContextKey is a context key. It can be used in HTTP
 // handlers with Context.Value to access the server that
-// started the handler. The associated value will be of
+// started the handlers. The associated value will be of
 // type *http3.Server.
 var ServerContextKey = &contextKey{"http3-server"}
 
@@ -130,7 +130,7 @@ type Server struct {
 	// Configured versions are also used in Alt-Svc response header set with SetQUICHeaders.
 	QUICConfig *quic.Config
 
-	// Handler is the HTTP request handler to use. If not set, defaults to
+	// Handler is the HTTP request handlers to use. If not set, defaults to
 	// http.NotFound.
 	Handler http.Handler
 
@@ -670,7 +670,7 @@ func (s *Server) handleRequest(conn *Conn, str datagramStream, decoder *qpack.De
 	r.Flush()
 	r.flushTrailers()
 
-	// If the EOF was read by the handler, CancelRead() is a no-op.
+	// If the EOF was read by the handlers, CancelRead() is a no-op.
 	str.CancelRead(quic.StreamErrorCode(ErrCodeNoError))
 	str.Close()
 }
@@ -777,8 +777,8 @@ func (s *Server) SetQUICHeaders(hdr http.Header) error {
 }
 
 // ListenAndServeQUIC listens on the UDP network address addr and calls the
-// handler for HTTP/3 requests on incoming connections. http.DefaultServeMux is
-// used when handler is nil.
+// handlers for HTTP/3 requests on incoming connections. http.DefaultServeMux is
+// used when handlers is nil.
 func ListenAndServeQUIC(addr, certFile, keyFile string, handler http.Handler) error {
 	server := &Server{
 		Addr:    addr,
@@ -789,7 +789,7 @@ func ListenAndServeQUIC(addr, certFile, keyFile string, handler http.Handler) er
 
 // ListenAndServeTLS listens on the given network address for both TLS/TCP and QUIC
 // connections in parallel. It returns if one of the two returns an error.
-// http.DefaultServeMux is used when handler is nil.
+// http.DefaultServeMux is used when handlers is nil.
 // The correct Alt-Svc headers for QUIC are set.
 func ListenAndServeTLS(addr, certFile, keyFile string, handler http.Handler) error {
 	// Load certs

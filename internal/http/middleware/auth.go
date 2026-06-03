@@ -4,6 +4,7 @@ import (
 	"auth-service/internal/domain"
 	"auth-service/internal/http/respond"
 	jwtlib "auth-service/internal/service/jwt"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -52,13 +53,11 @@ func Authenticate(jwtMgr *jwtlib.Manager) gin.HandlerFunc {
 func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		currentRoles := CurrentRoles(c)
-		for _, currentRole := range currentRoles {
-			for _, allowedRole := range requiredRoles {
-				if currentRole == allowedRole {
-					c.Next()
-					return
-				}
-			}
+		if slices.ContainsFunc(currentRoles, func(currentRole string) bool {
+			return slices.Contains(requiredRoles, currentRole)
+		}) {
+			c.Next()
+			return
 		}
 
 		respond.Error(c, 403, "forbidden", domain.ErrForbidden.Error())

@@ -47,17 +47,17 @@ type TraceInfo struct {
 // HandlerOptions are options for a JSONHandler.
 type HandlerOptions struct {
 	// Level reports the minimum record level that will be logged.
-	// If Level is nil, the handler assumes QLogLevelEndpoint.
+	// If Level is nil, the handlers assumes QLogLevelEndpoint.
 	Level slog.Leveler
 
 	// Dir is the directory in which to create trace files.
-	// The handler will create one file per connection.
-	// If NewTrace is non-nil or Dir is "", the handler will not create files.
+	// The handlers will create one file per connection.
+	// If NewTrace is non-nil or Dir is "", the handlers will not create files.
 	Dir string
 
 	// NewTrace is called to create a new trace.
 	// If NewTrace is nil and Dir is set,
-	// the handler will create a new file in Dir for each trace.
+	// the handlers will create a new file in Dir for each trace.
 	NewTrace func(TraceInfo) (io.WriteCloser, error)
 }
 
@@ -68,17 +68,17 @@ type endpointHandler struct {
 	trace     *jsonTraceHandler
 }
 
-// NewJSONHandler returns a handler which serializes qlog events to JSON.
+// NewJSONHandler returns a handlers which serializes qlog events to JSON.
 //
-// The handler will write an endpoint-wide trace,
+// The handlers will write an endpoint-wide trace,
 // and a separate trace for each connection.
 // The HandlerOptions control the location traces are written.
 //
 // It uses the streamable JSON Text Sequences mapping (JSON-SEQ)
 // defined in draft-ietf-quic-qlog-main-schema-04, Section 6.2.
 //
-// A JSONHandler may be used as the handler for a quic.Config.QLogLogger.
-// It is not a general-purpose slog handler,
+// A JSONHandler may be used as the handlers for a quic.Config.QLogLogger.
+// It is not a general-purpose slog handlers,
 // and may not properly handle events from other sources.
 func NewJSONHandler(opts HandlerOptions) slog.Handler {
 	if opts.Dir == "" && opts.NewTrace == nil {

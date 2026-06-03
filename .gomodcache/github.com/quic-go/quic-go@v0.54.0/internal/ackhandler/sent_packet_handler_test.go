@@ -1090,7 +1090,7 @@ func TestSentPacketHandlerECN(t *testing.T) {
 	_, err = sph.ReceivedAck(&wire.AckFrame{AckRanges: ackRanges(pns[0], pns[1])}, protocol.Encryption1RTT, now)
 	require.NoError(t, err)
 
-	// Send another packet, and have the ECN handler report congestion.
+	// Send another packet, and have the ECN handlers report congestion.
 	// This needs to be reported to the congestion controller.
 	pns = pns[:1]
 	now = now.Add(time.Second)

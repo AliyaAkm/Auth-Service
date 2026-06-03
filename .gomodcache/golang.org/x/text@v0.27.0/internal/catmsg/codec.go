@@ -345,7 +345,7 @@ func (d *Decoder) executeMessageFromData(s string) (n int, ok bool) {
 	return n, ok
 }
 
-var errUnknownHandler = errors.New("catmsg: string contains unsupported handler")
+var errUnknownHandler = errors.New("catmsg: string contains unsupported handlers")
 
 // executeMessage reads the handle id, initializes the decoder and executes the
 // message. It is assumed that all of d.data[d.p:] is the single message.

@@ -13,7 +13,7 @@ import (
 // BUG(mikio): On Windows, the ControlMessage for ReadFrom and WriteTo
 // methods of PacketConn is not implemented.
 
-// A payloadHandler represents the IPv4 datagram payload handler.
+// A payloadHandler represents the IPv4 datagram payload handlers.
 type payloadHandler struct {
 	net.PacketConn
 	*socket.Conn

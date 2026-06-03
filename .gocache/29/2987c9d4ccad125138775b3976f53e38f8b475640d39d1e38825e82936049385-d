@@ -1,8 +1,0 @@
-./error.go
-./password_reset.go
-./role.go
-./session.go
-./user.go
-./user_roles.go
-./validation.go
-./role_test.go

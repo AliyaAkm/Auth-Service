@@ -19,7 +19,7 @@ var matcher = language.NewMatcher([]language.Tag{
 	language.German,
 })
 
-// handler is an http.HandlerFunc.
+// handlers is an http.HandlerFunc.
 func handler(w http.ResponseWriter, r *http.Request) {
 	t, q, err := language.ParseAcceptLanguage(r.Header.Get("Accept-Language"))
 	// We ignore the error: the default language will be selected for t == nil.
@@ -34,7 +34,7 @@ func ExampleParseAcceptLanguage() {
 		"gsw, nl, da",
 		"invalid",
 	} {
-		// Create dummy request with Accept-Language set and pass it to handler.
+		// Create dummy request with Accept-Language set and pass it to handlers.
 		r, _ := http.NewRequest("GET", "example.com", strings.NewReader("Hello"))
 		r.Header.Set("Accept-Language", al)
 		handler(nil, r)

@@ -144,7 +144,7 @@ func (c *Context) Copy() *Context {
 	return &cp
 }
 
-// HandlerName returns the main handler's name. For example if the handler is "handleGetUsers()",
+// HandlerName returns the main handlers's name. For example if the handlers is "handleGetUsers()",
 // this function will return "main.handleGetUsers".
 func (c *Context) HandlerName() string {
 	return nameOfFunction(c.handlers.Last())
@@ -163,7 +163,7 @@ func (c *Context) HandlerNames() []string {
 	return hn
 }
 
-// Handler returns the main handler.
+// Handler returns the main handlers.
 func (c *Context) Handler() HandlerFunc {
 	return c.handlers.Last()
 }
@@ -183,7 +183,7 @@ func (c *Context) FullPath() string {
 /************************************/
 
 // Next should be used only inside middleware.
-// It executes the pending handlers in the chain inside the calling handler.
+// It executes the pending handlers in the chain inside the calling handlers.
 // See example in GitHub.
 func (c *Context) Next() {
 	c.index++
@@ -200,7 +200,7 @@ func (c *Context) IsAborted() bool {
 	return c.index >= abortIndex
 }
 
-// Abort prevents pending handlers from being called. Note that this will not stop the current handler.
+// Abort prevents pending handlers from being called. Note that this will not stop the current handlers.
 // Let's say you have an authorization middleware that validates that the current request is authorized.
 // If the authorization fails (ex: the password does not match), call Abort to ensure the remaining handlers
 // for this request are not called.

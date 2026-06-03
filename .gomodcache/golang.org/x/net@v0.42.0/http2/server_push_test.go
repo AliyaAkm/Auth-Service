@@ -113,7 +113,7 @@ func TestServer_Push_Success(t *testing.T) {
 	for k := 0; k < 3; k++ {
 		select {
 		case <-time.After(2 * time.Second):
-			t.Errorf("timeout waiting for handler %d to finish", k)
+			t.Errorf("timeout waiting for handlers %d to finish", k)
 		case err := <-errc:
 			if err != nil {
 				t.Fatal(err)
@@ -243,7 +243,7 @@ func TestServer_Push_Success(t *testing.T) {
 }
 
 func TestServer_Push_SuccessNoRace(t *testing.T) {
-	// Regression test for issue #18326. Ensure the request handler can mutate
+	// Regression test for issue #18326. Ensure the request handlers can mutate
 	// pushed request headers without racing with the PUSH_PROMISE write.
 	errc := make(chan error, 2)
 	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
@@ -277,7 +277,7 @@ func TestServer_Push_SuccessNoRace(t *testing.T) {
 	for k := 0; k < 2; k++ {
 		select {
 		case <-time.After(2 * time.Second):
-			t.Errorf("timeout waiting for handler %d to finish", k)
+			t.Errorf("timeout waiting for handlers %d to finish", k)
 		case err := <-errc:
 			if err != nil {
 				t.Fatal(err)
@@ -463,8 +463,8 @@ func TestServer_Push_StateTransitions(t *testing.T) {
 	if got, want := st.streamState(2), stateHalfClosedRemote; got != want {
 		t.Fatalf("streamState(2)=%v, want %v", got, want)
 	}
-	// We stall the HTTP handler for "/pushed" until the above check. If we don't
-	// stall the handler, then the handler might write HEADERS and DATA and finish
+	// We stall the HTTP handlers for "/pushed" until the above check. If we don't
+	// stall the handlers, then the handlers might write HEADERS and DATA and finish
 	// the stream before we check st.streamState(2) -- should that happen, we'll
 	// see stateClosed and fail the above check.
 	close(gotPromise)

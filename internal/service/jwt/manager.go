@@ -2,8 +2,10 @@ package jwt
 
 import (
 	"auth-service/internal/domain"
-	"github.com/google/uuid"
+	"slices"
 	"time"
+
+	"github.com/google/uuid"
 
 	jwtlib "github.com/golang-jwt/jwt/v5"
 )
@@ -11,6 +13,7 @@ import (
 type Claims struct {
 	Role     string   `json:"role"`
 	Roles    []string `json:"roles,omitempty"`
+	Login    string   `json:"login,omitempty"`
 	IsActive bool     `json:"is_active"`
 	jwtlib.RegisteredClaims
 }
@@ -26,11 +29,12 @@ func New(secret []byte, issuer, audience string, ttl time.Duration) *Manager {
 	return &Manager{secret: secret, issuer: issuer, audience: audience, ttl: ttl}
 }
 
-func (m *Manager) NewAccessToken(userID uuid.UUID, primaryRole string, roles []string, isActive bool) (string, error) {
+func (m *Manager) NewAccessToken(userID uuid.UUID, primaryRole string, roles []string, login string, isActive bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		Role:     primaryRole,
 		Roles:    normalizeRoleClaims(primaryRole, roles),
+		Login:    login,
 		IsActive: isActive,
 		RegisteredClaims: jwtlib.RegisteredClaims{
 			Issuer:    m.issuer,
@@ -84,12 +88,7 @@ func (m *Manager) Verify(tokenStr string) (*Claims, error) {
 }
 
 func audienceHas(auds jwtlib.ClaimStrings, want string) bool {
-	for _, a := range auds {
-		if a == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(auds, want)
 }
 
 func normalizeRoleClaims(primaryRole string, roles []string) []string {
@@ -99,10 +98,8 @@ func normalizeRoleClaims(primaryRole string, roles []string) []string {
 		if role == "" || !domain.IsValidRoleCode(role) {
 			return
 		}
-		for _, existing := range normalized {
-			if existing == role {
-				return
-			}
+		if slices.Contains(normalized, role) {
+			return
 		}
 		normalized = append(normalized, role)
 	}

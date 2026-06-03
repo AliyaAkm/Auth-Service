@@ -110,7 +110,7 @@ func testServerSettings(t *testing.T, enableDatagrams bool, other map[uint64]uin
 }
 
 func TestServerRequestHandling(t *testing.T) {
-	t.Run("200 with an empty handler", func(t *testing.T) {
+	t.Run("200 with an empty handlers", func(t *testing.T) {
 		hfs, body := testServerRequestHandling(t,
 			func(w http.ResponseWriter, r *http.Request) {},
 			httptest.NewRequest(http.MethodGet, "https://www.example.com", nil),
@@ -302,7 +302,7 @@ func TestServerStreamResetByClient(t *testing.T) {
 }
 
 func TestServerPanickingHandler(t *testing.T) {
-	t.Run("panicking handler", func(t *testing.T) {
+	t.Run("panicking handlers", func(t *testing.T) {
 		logOutput := testServerPanickingHandler(t, func(w http.ResponseWriter, r *http.Request) {
 			panic("foobar")
 		})

@@ -3260,7 +3260,7 @@ func TestContextNext(t *testing.T) {
 	c.Next()
 	assert.Equal(t, int8(0), c.index)
 
-	// Test with one handler
+	// Test with one handlers
 	c.index = -1
 	c.handlers = HandlersChain{func(c *Context) {
 		c.Set("key", "value")

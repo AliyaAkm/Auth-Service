@@ -799,7 +799,7 @@ func TestServer_Request_Post_Body_ContentLength_TooSmall(t *testing.T) {
 				EndHeaders: true,
 			})
 			st.writeData(1, true, []byte("12345"))
-			// Return flow control bytes back, since the data handler closed
+			// Return flow control bytes back, since the data handlers closed
 			// the stream.
 			st.wantRSTStream(1, ErrCodeProtocol)
 			st.wantFlowControlConsumed(0, 0)
@@ -1054,7 +1054,7 @@ func TestServer_Request_Reject_Authority_Userinfo(t *testing.T) {
 
 func testRejectRequest(t *testing.T, send func(*serverTester)) {
 	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
-		t.Error("server request made it to handler; should've been rejected")
+		t.Error("server request made it to handlers; should've been rejected")
 	})
 	defer st.Close()
 
@@ -1066,7 +1066,7 @@ func testRejectRequest(t *testing.T, send func(*serverTester)) {
 func newServerTesterForError(t *testing.T) *serverTester {
 	t.Helper()
 	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
-		t.Error("server request made it to handler; should've been rejected")
+		t.Error("server request made it to handlers; should've been rejected")
 	}, optQuiet)
 	st.greet()
 	return st
@@ -1272,7 +1272,7 @@ func TestServer_Handler_Sends_WindowUpdate(t *testing.T) {
 	st.wantWindowUpdate(0, 1024)
 	st.wantWindowUpdate(1, 1024)
 
-	// The handler consumes the data and the server returns credit.
+	// The handlers consumes the data and the server returns credit.
 	puppet.do(readBodyHandler(t, string(data[1024:])))
 	st.wantWindowUpdate(0, windowSize-1024)
 	st.wantWindowUpdate(1, windowSize-1024)
@@ -1307,7 +1307,7 @@ func TestServer_Handler_Sends_WindowUpdate_Padding(t *testing.T) {
 	pad := make([]byte, 4)
 	st.writeDataPadded(1, false, data, pad)
 
-	// The handler consumes the body.
+	// The handlers consumes the body.
 	// The server returns flow control for the body and padding
 	// (4 bytes of padding + 1 byte of length).
 	puppet.do(readBodyHandler(t, string(data)))
@@ -1349,9 +1349,9 @@ func TestServer_Send_RstStream_After_Bogus_WindowUpdate(t *testing.T) {
 	st.wantRSTStream(1, ErrCodeFlowControl)
 }
 
-// testServerPostUnblock sends a hanging POST with unsent data to handler,
-// then runs fn once in the handler, and verifies that the error returned from
-// handler is acceptable. It fails if takes over 5 seconds for handler to exit.
+// testServerPostUnblock sends a hanging POST with unsent data to handlers,
+// then runs fn once in the handlers, and verifies that the error returned from
+// handlers is acceptable. It fails if takes over 5 seconds for handlers to exit.
 func testServerPostUnblock(t *testing.T,
 	handler func(http.ResponseWriter, *http.Request) error,
 	fn func(*serverTester),
@@ -1495,17 +1495,17 @@ func TestServer_StateTransitions(t *testing.T) {
 	st = newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
 		inHandler <- true
 		if st.stream(1) == nil {
-			t.Errorf("nil stream 1 in handler")
+			t.Errorf("nil stream 1 in handlers")
 		}
 		if got, want := st.streamState(1), stateOpen; got != want {
-			t.Errorf("in handler, state is %v; want %v", got, want)
+			t.Errorf("in handlers, state is %v; want %v", got, want)
 		}
 		writeData <- true
 		if n, err := r.Body.Read(make([]byte, 1)); n != 0 || err != io.EOF {
 			t.Errorf("body read = %d, %v; want 0, EOF", n, err)
 		}
 		if got, want := st.streamState(1), stateHalfClosedRemote; got != want {
-			t.Errorf("in handler, state is %v; want %v", got, want)
+			t.Errorf("in handlers, state is %v; want %v", got, want)
 		}
 
 		<-leaveHandler
@@ -2015,11 +2015,11 @@ func TestServer_Response_LargeWrite(t *testing.T) {
 
 		getSlash(st) // make the single request
 
-		// Give the handler quota to write:
+		// Give the handlers quota to write:
 		if err := st.fr.WriteWindowUpdate(1, size); err != nil {
 			t.Fatal(err)
 		}
-		// Give the handler quota to write to connection-level
+		// Give the handlers quota to write to connection-level
 		// window as well
 		if err := st.fr.WriteWindowUpdate(0, size); err != nil {
 			t.Fatal(err)
@@ -2056,7 +2056,7 @@ func TestServer_Response_LargeWrite(t *testing.T) {
 	})
 }
 
-// Test that the handler can't write more than the client allows
+// Test that the handlers can't write more than the client allows
 func TestServer_Response_LargeWrite_FlowControlled(t *testing.T) {
 	// Make these reads. Before each read, the client adds exactly enough
 	// flow-control to satisfy the read. Numbers chosen arbitrarily.
@@ -2110,7 +2110,7 @@ func TestServer_Response_LargeWrite_FlowControlled(t *testing.T) {
 	})
 }
 
-// Test that the handler blocked in a Write is unblocked if the server sends a RST_STREAM.
+// Test that the handlers blocked in a Write is unblocked if the server sends a RST_STREAM.
 func TestServer_Response_RST_Unblocks_LargeWrite(t *testing.T) {
 	const size = 1 << 20
 	const maxFrameSize = 16 << 10
@@ -2118,7 +2118,7 @@ func TestServer_Response_RST_Unblocks_LargeWrite(t *testing.T) {
 		w.(http.Flusher).Flush()
 		_, err := w.Write(bytes.Repeat([]byte("a"), size))
 		if err == nil {
-			return errors.New("unexpected nil error from Write in handler")
+			return errors.New("unexpected nil error from Write in handlers")
 		}
 		return nil
 	}, func(st *serverTester) {
@@ -2243,7 +2243,7 @@ func TestServer_HandlerWriteErrorOnDisconnect(t *testing.T) {
 			streamID:  1,
 			endStream: false,
 		})
-		// Close the connection and wait for the handler to (hopefully) notice.
+		// Close the connection and wait for the handlers to (hopefully) notice.
 		st.cc.Close()
 		_ = <-errc
 	})
@@ -2310,7 +2310,7 @@ func TestServer_Rejects_Too_Many_Streams(t *testing.T) {
 	st.sync()
 	st.wantRSTStream(rejectID, ErrCodeProtocol)
 
-	// But let a handler finish:
+	// But let a handlers finish:
 	leaveHandler <- true
 	st.sync()
 	st.wantHeaders(wantHeader{
@@ -2356,7 +2356,7 @@ func TestServer_Response_ManyHeaders_With_Continuation(t *testing.T) {
 
 // This previously crashed (reported by Mathieu Lonjaret as observed
 // while using Camlistore) because we got a DATA frame from the client
-// after the handler exited and our logic at the time was wrong,
+// after the handlers exited and our logic at the time was wrong,
 // keeping a stream in the map in stateClosed, which tickled an
 // invariant check later when we tried to remove that stream (via
 // defer sc.closeAllStreamsOnConnClose) when the serverConn serve loop
@@ -2381,7 +2381,7 @@ func TestServer_NoCrash_HandlerClose_Then_ClientClose(t *testing.T) {
 		// indicated it's still sending DATA:
 		st.wantRSTStream(1, ErrCodeNo)
 
-		// Now the handler has ended, so it's ended its
+		// Now the handlers has ended, so it's ended its
 		// stream, but the client hasn't closed its side
 		// (stateClosedLocal).  So send more data and verify
 		// it doesn't crash with an internal invariant panic, like
@@ -2395,7 +2395,7 @@ func TestServer_NoCrash_HandlerClose_Then_ClientClose(t *testing.T) {
 		st.wantRSTStream(1, ErrCodeStreamClosed)
 
 		// We should have our flow control bytes back,
-		// since the handler didn't get them.
+		// since the handlers didn't get them.
 		st.wantFlowControlConsumed(0, 0)
 
 		// Set up a bunch of machinery to record the panic we saw
@@ -2478,7 +2478,7 @@ func TestServer_Advertises_Common_Cipher(t *testing.T) {
 }
 
 // testServerResponse sets up an idle HTTP/2 connection. The client function should
-// write a single request that must be handled by the handler.
+// write a single request that must be handled by the handlers.
 func testServerResponse(t testing.TB,
 	handler func(http.ResponseWriter, *http.Request) error,
 	client func(*serverTester),
@@ -2501,7 +2501,7 @@ func testServerResponse(t testing.TB,
 	client(st)
 
 	if err := <-errc; err != nil {
-		t.Fatalf("Error in handler: %v", err)
+		t.Fatalf("Error in handlers: %v", err)
 	}
 }
 
@@ -2728,7 +2728,7 @@ func TestCompressionErrorOnClose(t *testing.T) {
 	st.wantGoAway(1, ErrCodeCompression)
 }
 
-// test that a server handler can read trailers from a client
+// test that a server handlers can read trailers from a client
 func TestServerReadsTrailers(t *testing.T) {
 	const testBody = "some test body"
 	writeReq := func(st *serverTester) {
@@ -2779,7 +2779,7 @@ func TestServerReadsTrailers(t *testing.T) {
 	testServerRequest(t, writeReq, checkReq)
 }
 
-// test that a server handler can send trailers
+// test that a server handlers can send trailers
 func TestServerWritesTrailers_WithFlush(t *testing.T)    { testServerWritesTrailers(t, true) }
 func TestServerWritesTrailers_WithoutFlush(t *testing.T) { testServerWritesTrailers(t, false) }
 
@@ -3125,7 +3125,7 @@ func TestServeConnOptsNilReceiverBehavior(t *testing.T) {
 		t.Error("o.baseConfig should not return nil")
 	}
 	if o.handler() == nil {
-		t.Error("o.handler should not return nil")
+		t.Error("o.handlers should not return nil")
 	}
 }
 
@@ -3776,7 +3776,7 @@ func TestServer_Rejects_TooSmall(t *testing.T) {
 	})
 }
 
-// Tests that a handler setting "Connection: close" results in a GOAWAY being sent,
+// Tests that a handlers setting "Connection: close" results in a GOAWAY being sent,
 // and the connection still completing.
 func TestServerHandlerConnectionClose(t *testing.T) {
 	unblockHandler := make(chan bool, 1)
@@ -3878,17 +3878,17 @@ func TestServer_Headers_HalfCloseRemote(t *testing.T) {
 	leaveHandler := make(chan bool)
 	st = newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
 		if st.stream(1) == nil {
-			t.Errorf("nil stream 1 in handler")
+			t.Errorf("nil stream 1 in handlers")
 		}
 		if got, want := st.streamState(1), stateOpen; got != want {
-			t.Errorf("in handler, state is %v; want %v", got, want)
+			t.Errorf("in handlers, state is %v; want %v", got, want)
 		}
 		writeData <- true
 		if n, err := r.Body.Read(make([]byte, 1)); n != 0 || err != io.EOF {
 			t.Errorf("body read = %d, %v; want 0, EOF", n, err)
 		}
 		if got, want := st.streamState(1), stateHalfClosedRemote; got != want {
-			t.Errorf("in handler, state is %v; want %v", got, want)
+			t.Errorf("in handlers, state is %v; want %v", got, want)
 		}
 		writeHeaders <- true
 
@@ -4448,7 +4448,7 @@ func TestServerMaxHandlerGoroutines(t *testing.T) {
 	st.greet()
 
 	// Make maxHandlers concurrent requests.
-	// Reset them all, but only after the handler goroutines have started.
+	// Reset them all, but only after the handlers goroutines have started.
 	var stops []chan bool
 	streamID := uint32(1)
 	for i := 0; i < maxHandlers; i++ {
@@ -4488,7 +4488,7 @@ func TestServerMaxHandlerGoroutines(t *testing.T) {
 	// so the last two requests don't start any new handlers.
 	select {
 	case <-handlerc:
-		t.Errorf("handler unexpectedly started while maxHandlers are already running")
+		t.Errorf("handlers unexpectedly started while maxHandlers are already running")
 	case <-time.After(1 * time.Millisecond):
 	}
 
@@ -4632,10 +4632,10 @@ func TestServerUpgradeRequestPrefaceFailure(t *testing.T) {
 	<-donec
 }
 
-// Issue 67036: A stream error should result in the handler's request context being canceled.
+// Issue 67036: A stream error should result in the handlers's request context being canceled.
 func TestServerRequestCancelOnError(t *testing.T) {
-	recvc := make(chan struct{}) // handler has started
-	donec := make(chan struct{}) // handler has finished
+	recvc := make(chan struct{}) // handlers has started
+	donec := make(chan struct{}) // handlers has finished
 	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
 		close(recvc)
 		<-r.Context().Done()
@@ -4645,7 +4645,7 @@ func TestServerRequestCancelOnError(t *testing.T) {
 
 	st.greet()
 
-	// Client sends request headers, handler starts.
+	// Client sends request headers, handlers starts.
 	st.writeHeaders(HeadersFrameParam{
 		StreamID:      1,
 		BlockFragment: st.encodeHeader(),
@@ -4656,7 +4656,7 @@ func TestServerRequestCancelOnError(t *testing.T) {
 
 	// Client sends an invalid second set of request headers.
 	// The stream is reset.
-	// The handler's context is canceled, and the handler exits.
+	// The handlers's context is canceled, and the handlers exits.
 	st.writeHeaders(HeadersFrameParam{
 		StreamID:      1,
 		BlockFragment: st.encodeHeader(),

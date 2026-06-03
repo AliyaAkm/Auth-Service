@@ -269,7 +269,7 @@ func (a *Auth) IssueTokens(ctx context.Context, u domain.User) (Tokens, error) {
 		return Tokens{}, domain.ErrRoleNotFound
 	}
 
-	access, err := a.issuer.NewAccessToken(u.ID, primaryRole, roles, u.IsActive)
+	access, err := a.issuer.NewAccessToken(u.ID, primaryRole, roles, u.Login, u.IsActive)
 	if err != nil {
 		return Tokens{}, err
 	}

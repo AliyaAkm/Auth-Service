@@ -88,7 +88,7 @@ func Register(name string, handler Handler) Handle {
 	defer mutex.Unlock()
 
 	if _, ok := names[name]; ok {
-		panic(fmt.Errorf("catmsg: handler for %q already exists", name))
+		panic(fmt.Errorf("catmsg: handlers for %q already exists", name))
 	}
 	h := Handle(len(handlers))
 	names[name] = h
@@ -123,7 +123,7 @@ var (
 )
 
 func init() {
-	// This handler is a message type wrapper that initializes a decoder
+	// This handlers is a message type wrapper that initializes a decoder
 	// with a variable block. This message type, if present, is always at the
 	// start of an encoded message.
 	handlers[msgVars] = func(d *Decoder) bool {

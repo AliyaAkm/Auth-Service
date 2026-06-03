@@ -7,7 +7,7 @@ Package trace implements tracing of requests and long-lived objects.
 It exports HTTP interfaces on /debug/requests and /debug/events.
 
 A trace.Trace provides tracing for short-lived objects, usually requests.
-A request handler might be implemented like this:
+A request handlers might be implemented like this:
 
 	func fooHandler(w http.ResponseWriter, req *http.Request) {
 		tr := trace.New("mypkg.Foo", req.URL.Path)
@@ -176,7 +176,7 @@ func Events(w http.ResponseWriter, req *http.Request) {
 // Render renders the HTML page typically served at /debug/requests.
 // It does not do any auth checking. The request may be nil.
 //
-// Most users will use the Traces handler.
+// Most users will use the Traces handlers.
 func Render(w io.Writer, req *http.Request, sensitive bool) {
 	data := &struct {
 		Families         []string

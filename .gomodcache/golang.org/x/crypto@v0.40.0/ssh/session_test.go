@@ -634,11 +634,11 @@ func simpleEchoHandler(ch Channel, in <-chan *Request, t *testing.T) {
 	defer ch.Close()
 	data, err := io.ReadAll(ch)
 	if err != nil {
-		t.Errorf("handler read error: %v", err)
+		t.Errorf("handlers read error: %v", err)
 	}
 	_, err = ch.Write(data)
 	if err != nil {
-		t.Errorf("handler write error: %v", err)
+		t.Errorf("handlers write error: %v", err)
 	}
 }
 

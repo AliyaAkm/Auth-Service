@@ -210,7 +210,7 @@ func (r *authResetRepoStub) MarkUsed(_ context.Context, resetID uuid.UUID, when 
 
 type authTokenIssuerStub struct{}
 
-func (authTokenIssuerStub) NewAccessToken(uuid.UUID, string, []string, bool) (string, error) {
+func (authTokenIssuerStub) NewAccessToken(uuid.UUID, string, []string, string, bool) (string, error) {
 	return "access-token", nil
 }
 

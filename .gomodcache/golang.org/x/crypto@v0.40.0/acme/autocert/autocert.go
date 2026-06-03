@@ -376,14 +376,14 @@ func supportsECDSA(hello *tls.ClientHelloInfo) bool {
 // HTTPHandler configures the Manager to provision ACME "http-01" challenge responses.
 // It returns an http.Handler that responds to the challenges and must be
 // running on port 80. If it receives a request that is not an ACME challenge,
-// it delegates the request to the optional fallback handler.
+// it delegates the request to the optional fallback handlers.
 //
-// If fallback is nil, the returned handler redirects all GET and HEAD requests
+// If fallback is nil, the returned handlers redirects all GET and HEAD requests
 // to the default TLS port 443 with 302 Found status code, preserving the original
 // request path and query. It responds with 400 Bad Request to all other HTTP methods.
 // The fallback is not protected by the optional HostPolicy.
 //
-// Because the fallback handler is run with unencrypted port 80 requests,
+// Because the fallback handlers is run with unencrypted port 80 requests,
 // the fallback should not serve TLS-only requests.
 //
 // If HTTPHandler is never called, the Manager will only use the "tls-alpn-01"
