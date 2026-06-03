@@ -14,34 +14,36 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 	}
 
 	return dto.UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Login:     user.Login,
-		Name:      displayName,
-		Bio:       user.Bio,
-		PhotoURL:  user.PhotoURL,
-		Streak:    user.Streak,
-		MaxStreak: user.MaxStreak,
-		XP:        user.XP,
-		Level:     user.Level,
-		Roles:     toRoleResponses(user.Roles),
-		IsActive:  user.IsActive,
-		CreatedAt: user.CreatedAt,
+		ID:             user.ID,
+		Email:          user.Email,
+		Login:          user.Login,
+		Name:           displayName,
+		Bio:            user.Bio,
+		PhotoURL:       user.PhotoURL,
+		PhotoObjectKey: user.PhotoObjectKey,
+		Streak:         user.Streak,
+		MaxStreak:      user.MaxStreak,
+		XP:             user.XP,
+		Level:          user.Level,
+		Roles:          toRoleResponses(user.Roles),
+		IsActive:       user.IsActive,
+		CreatedAt:      user.CreatedAt,
 	}
 }
 
 func toProfileResponse(user *domain.User) dto.ProfileResponse {
 	return dto.ProfileResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Login:     user.Login,
-		Bio:       user.Bio,
-		PhotoURL:  user.PhotoURL,
-		Streak:    user.Streak,
-		MaxStreak: user.MaxStreak,
-		XP:        user.XP,
-		Level:     user.Level,
-		CreatedAt: user.CreatedAt,
+		ID:             user.ID,
+		Email:          user.Email,
+		Login:          user.Login,
+		Bio:            user.Bio,
+		PhotoURL:       user.PhotoURL,
+		PhotoObjectKey: user.PhotoObjectKey,
+		Streak:         user.Streak,
+		MaxStreak:      user.MaxStreak,
+		XP:             user.XP,
+		Level:          user.Level,
+		CreatedAt:      user.CreatedAt,
 	}
 }
 

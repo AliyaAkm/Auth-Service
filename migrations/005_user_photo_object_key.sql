@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS photo_object_key TEXT NOT NULL DEFAULT '';

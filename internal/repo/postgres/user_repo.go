@@ -148,7 +148,7 @@ func (r *UserRepo) GetProfileByID(ctx context.Context, id uuid.UUID) (domain.Use
 			FROM users
 			WHERE id = $1
 		)
-		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''),
+		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''), COALESCE(photo_object_key, ''),
 		       current_streak,
 		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
 		       COALESCE(level, 0)::integer,
@@ -161,6 +161,7 @@ func (r *UserRepo) GetProfileByID(ctx context.Context, id uuid.UUID) (domain.Use
 		&u.Login,
 		&u.Bio,
 		&u.PhotoURL,
+		&u.PhotoObjectKey,
 		&u.Streak,
 		&u.MaxStreak,
 		&u.Level,
@@ -221,6 +222,9 @@ func (r *UserRepo) UpdateUserProfile(ctx context.Context, userID uuid.UUID, upda
 	if update.PhotoURL != nil {
 		add("photo_url", *update.PhotoURL)
 	}
+	if update.PhotoObjectKey != nil {
+		add("photo_object_key", *update.PhotoObjectKey)
+	}
 	if len(set) == 0 {
 		return nil
 	}
@@ -272,7 +276,7 @@ func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 				COALESCE((SELECT streak FROM daily_streak WHERE user_id = users.id ORDER BY last_login DESC LIMIT 1), 0)::integer AS current_streak
 			FROM users
 		)
-		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''),
+		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''), COALESCE(photo_object_key, ''),
 		       current_streak,
 		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
 		       COALESCE(level, 0)::integer,
@@ -295,6 +299,7 @@ func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 			&user.Login,
 			&user.Bio,
 			&user.PhotoURL,
+			&user.PhotoObjectKey,
 			&user.Streak,
 			&user.MaxStreak,
 			&user.Level,

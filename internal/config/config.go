@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
+	"github.com/caarlos0/env/v11"
 	"net"
 	"os"
 	"strings"
-	"github.com/caarlos0/env/v11"
 	"time"
 )
 
@@ -37,11 +37,17 @@ type SMTPConfig struct {
 	PasswordResetSubject string `env:"PASSWORD_RESET_SUBJECT" envDefault:"Password reset code"`
 }
 
+type StorageServiceConfig struct {
+	URL     string        `env:"URL" envDefault:"http://localhost:8085"`
+	Timeout time.Duration `env:"TIMEOUT" envDefault:"30m"`
+}
+
 type Config struct {
-	HTTPAddr string     `env:"HTTP_ADDR"`
-	DB       DbConfig   `envPrefix:"DB_"`
-	JWT      JWTConfig  `envPrefix:"JWT_"`
-	SMTP     SMTPConfig `envPrefix:"SMTP_"`
+	HTTPAddr string               `env:"HTTP_ADDR"`
+	DB       DbConfig             `envPrefix:"DB_"`
+	JWT      JWTConfig            `envPrefix:"JWT_"`
+	SMTP     SMTPConfig           `envPrefix:"SMTP_"`
+	Storage  StorageServiceConfig `envPrefix:"STORAGE_SERVICE_"`
 }
 
 func ReadEnv() (*Config, error) {

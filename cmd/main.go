@@ -3,6 +3,7 @@ package main
 import (
 	jwtlib "auth-service/internal/service/jwt"
 	"auth-service/internal/service/notification"
+	"auth-service/internal/service/storage"
 	"context"
 	"errors"
 	"github.com/google/uuid"
@@ -50,6 +51,13 @@ func main() {
 	userRepo := postgres.NewUserRepo(pool)
 	refreshRepo := postgres.NewRefreshRepo(pool)
 	resetRepo := postgres.NewPasswordResetRepo(pool)
+	storageClient, err := storage.NewClient(storage.ClientConfig{
+		BaseURL: cfg.Storage.URL,
+		Timeout: cfg.Storage.Timeout,
+	})
+	if err != nil {
+		logger.Fatal("error configuring storage service client", zap.Error(err))
+	}
 
 	hasher := security.PasswordHasher{}
 	resetSender, err := notification.NewSMTPPasswordResetCodeSender(
@@ -88,7 +96,7 @@ func main() {
 	rbacUC := usecase.NewRBAC(userRepo)
 
 	authH := handlers.NewAuthHandler(authUC, jwtMgr)
-	rbacH := handlers.NewRBACHandler(rbacUC)
+	rbacH := handlers.NewRBACHandler(rbacUC, storageClient)
 
 	engine := router.New(authH, rbacH, jwtMgr, logger)
 

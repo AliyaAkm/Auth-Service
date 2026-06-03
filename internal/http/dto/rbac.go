@@ -51,32 +51,34 @@ type RoleResponse struct {
 }
 
 type UserResponse struct {
-	ID        uuid.UUID      `json:"id"`
-	Email     string         `json:"email"`
-	Login     string         `json:"login"`
-	Name      string         `json:"name"`
-	Bio       string         `json:"bio"`
-	PhotoURL  string         `json:"photo_url"`
-	Streak    int            `json:"streak"`
-	MaxStreak int            `json:"max_streak"`
-	XP        int64          `json:"xp"`
-	Level     int            `json:"level"`
-	Roles     []RoleResponse `json:"roles"`
-	IsActive  bool           `json:"is_active"`
-	CreatedAt time.Time      `json:"created_at"`
+	ID             uuid.UUID      `json:"id"`
+	Email          string         `json:"email"`
+	Login          string         `json:"login"`
+	Name           string         `json:"name"`
+	Bio            string         `json:"bio"`
+	PhotoURL       string         `json:"photo_url"`
+	PhotoObjectKey string         `json:"photo_object_key,omitempty"`
+	Streak         int            `json:"streak"`
+	MaxStreak      int            `json:"max_streak"`
+	XP             int64          `json:"xp"`
+	Level          int            `json:"level"`
+	Roles          []RoleResponse `json:"roles"`
+	IsActive       bool           `json:"is_active"`
+	CreatedAt      time.Time      `json:"created_at"`
 }
 
 type ProfileResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Login     string    `json:"login"`
-	Bio       string    `json:"bio"`
-	PhotoURL  string    `json:"photo_url"`
-	Streak    int       `json:"streak"`
-	MaxStreak int       `json:"max_streak"`
-	XP        int64     `json:"xp"`
-	Level     int       `json:"level"`
-	CreatedAt time.Time `json:"created_at"`
+	ID             uuid.UUID `json:"id"`
+	Email          string    `json:"email"`
+	Login          string    `json:"login"`
+	Bio            string    `json:"bio"`
+	PhotoURL       string    `json:"photo_url"`
+	PhotoObjectKey string    `json:"photo_object_key,omitempty"`
+	Streak         int       `json:"streak"`
+	MaxStreak      int       `json:"max_streak"`
+	XP             int64     `json:"xp"`
+	Level          int       `json:"level"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 type UserRolesResponse struct {
