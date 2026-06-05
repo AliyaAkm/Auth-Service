@@ -15,12 +15,13 @@ type Tokens struct {
 }
 
 type Auth struct {
-	users       UserRepository
-	refresh     RefreshRepository
-	resets      PasswordResetRepository
-	hasher      PasswordHasher
-	issuer      TokenIssuer
-	resetSender PasswordResetCodeSender
+	users        UserRepository
+	refresh      RefreshRepository
+	resets       PasswordResetRepository
+	hasher       PasswordHasher
+	issuer       TokenIssuer
+	resetSender  PasswordResetCodeSender
+	notification NotificationSender
 
 	refreshTTL   time.Duration
 	resetCodeTTL time.Duration
@@ -41,7 +42,12 @@ func NewAuth(
 	resetCodeNew func() (string, error),
 	uuidNew func() uuid.UUID,
 	now func() time.Time,
+	notification ...NotificationSender,
 ) *Auth {
+	var sender NotificationSender
+	if len(notification) > 0 {
+		sender = notification[0]
+	}
 	return &Auth{
 		users:        users,
 		refresh:      refresh,
@@ -49,6 +55,7 @@ func NewAuth(
 		hasher:       hasher,
 		issuer:       issuer,
 		resetSender:  resetSender,
+		notification: sender,
 		refreshTTL:   refreshTTL,
 		resetCodeTTL: resetCodeTTL,
 		resetCodeNew: resetCodeNew,
@@ -218,6 +225,7 @@ func (a *Auth) ResetPassword(ctx context.Context, email, code, newPassword strin
 		return err
 	}
 
+	a.sendPasswordChanged(ctx, user.ID)
 	return nil
 }
 
@@ -250,7 +258,16 @@ func (a *Auth) ChangePassword(ctx context.Context, userID uuid.UUID, currentPass
 		return err
 	}
 
+	a.sendPasswordChanged(ctx, user.ID)
 	return nil
+}
+
+func (a *Auth) sendPasswordChanged(ctx context.Context, userID uuid.UUID) {
+	if a.notification == nil {
+		return
+	}
+
+	_ = a.notification.SendEvent(ctx, userID, "password_changed", map[string]any{})
 }
 
 func (a *Auth) GetUserByID(ctx context.Context, userID uuid.UUID) (*domain.User, error) {

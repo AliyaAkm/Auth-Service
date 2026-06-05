@@ -54,3 +54,7 @@ type PasswordResetRepository interface {
 type PasswordResetCodeSender interface {
 	SendPasswordResetCode(ctx context.Context, email, code string) error
 }
+
+type NotificationSender interface {
+	SendEvent(ctx context.Context, userID uuid.UUID, event string, data map[string]any) error
+}

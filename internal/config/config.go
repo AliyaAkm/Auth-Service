@@ -42,12 +42,19 @@ type StorageServiceConfig struct {
 	Timeout time.Duration `env:"TIMEOUT" envDefault:"30m"`
 }
 
+type NotificationServiceConfig struct {
+	URL            string        `env:"URL" envDefault:"http://localhost:8087"`
+	Timeout        time.Duration `env:"TIMEOUT" envDefault:"5s"`
+	InternalAPIKey string        `env:"INTERNAL_API_KEY" envDefault:""`
+}
+
 type Config struct {
-	HTTPAddr string               `env:"HTTP_ADDR"`
-	DB       DbConfig             `envPrefix:"DB_"`
-	JWT      JWTConfig            `envPrefix:"JWT_"`
-	SMTP     SMTPConfig           `envPrefix:"SMTP_"`
-	Storage  StorageServiceConfig `envPrefix:"STORAGE_SERVICE_"`
+	HTTPAddr     string                    `env:"HTTP_ADDR"`
+	DB           DbConfig                  `envPrefix:"DB_"`
+	JWT          JWTConfig                 `envPrefix:"JWT_"`
+	SMTP         SMTPConfig                `envPrefix:"SMTP_"`
+	Storage      StorageServiceConfig      `envPrefix:"STORAGE_SERVICE_"`
+	Notification NotificationServiceConfig `envPrefix:"NOTIFICATION_SERVICE_"`
 }
 
 func ReadEnv() (*Config, error) {

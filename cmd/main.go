@@ -73,6 +73,18 @@ func main() {
 		logger.Fatal("smtp configuration error", zap.Error(err))
 	}
 
+	var eventSender usecase.NotificationSender
+	if cfg.Notification.InternalAPIKey != "" {
+		eventSender, err = notification.NewEventClient(notification.EventClientConfig{
+			BaseURL:        cfg.Notification.URL,
+			Timeout:        cfg.Notification.Timeout,
+			InternalAPIKey: cfg.Notification.InternalAPIKey,
+		})
+		if err != nil {
+			logger.Fatal("notification client configuration error", zap.Error(err))
+		}
+	}
+
 	jwtMgr := jwtlib.New(
 		[]byte(cfg.JWT.Secret),
 		cfg.JWT.Issuer,
@@ -92,6 +104,7 @@ func main() {
 		security.NewPasswordResetCode,
 		uuid.New,
 		time.Now,
+		eventSender,
 	)
 	rbacUC := usecase.NewRBAC(userRepo)
 
