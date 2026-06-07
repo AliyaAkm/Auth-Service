@@ -109,12 +109,32 @@ func (r *UserRepo) FindByEmail(ctx context.Context, email string) (domain.User, 
 func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (domain.User, bool) {
 	var u domain.User
 	err := r.db.QueryRow(ctx, `
-		SELECT id, email, password_hash, is_active, created_at
-		FROM users
-		WHERE id = $1
+		WITH profile AS (
+			SELECT
+				users.*,
+				COALESCE((SELECT streak FROM daily_streak WHERE user_id = users.id ORDER BY last_login DESC LIMIT 1), 0)::integer AS current_streak,
+				COALESCE((SELECT SUM(xp) FROM user_xp_events WHERE user_id = users.id), 0)::bigint AS total_xp
+			FROM users
+			WHERE id = $1
+		)
+		SELECT id, email, COALESCE(login, ''), COALESCE(bio, ''), COALESCE(photo_url, ''), COALESCE(photo_object_key, ''),
+		       current_streak,
+		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
+		       GREATEST(COALESCE(level, 0), (1 + (total_xp / 180))::integer)::integer,
+		       total_xp,
+		       password_hash, is_active, created_at
+		FROM profile
 	`, id).Scan(
 		&u.ID,
 		&u.Email,
+		&u.Login,
+		&u.Bio,
+		&u.PhotoURL,
+		&u.PhotoObjectKey,
+		&u.Streak,
+		&u.MaxStreak,
+		&u.Level,
+		&u.XP,
 		&u.PasswordHash,
 		&u.IsActive,
 		&u.CreatedAt,
@@ -152,7 +172,7 @@ func (r *UserRepo) GetProfileByID(ctx context.Context, id uuid.UUID) (domain.Use
 		       current_streak,
 		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
 		       COALESCE(level, 0)::integer,
-		       COALESCE((SELECT SUM(xp) FROM user_course_points WHERE user_id = profile.id), 0)::bigint,
+		       COALESCE((SELECT SUM(xp) FROM user_xp_events WHERE user_id = profile.id), 0)::bigint,
 		       password_hash, is_active, created_at
 		FROM profile
 	`, id).Scan(
@@ -280,7 +300,7 @@ func (r *UserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 		       current_streak,
 		       GREATEST(COALESCE(max_streak, 0), current_streak)::integer,
 		       COALESCE(level, 0)::integer,
-		       COALESCE((SELECT SUM(xp) FROM user_course_points WHERE user_id = profiles.id), 0)::bigint,
+		       COALESCE((SELECT SUM(xp) FROM user_xp_events WHERE user_id = profiles.id), 0)::bigint,
 		       password_hash, is_active, created_at
 		FROM profiles
 		ORDER BY created_at DESC, email
@@ -332,7 +352,7 @@ func (r *UserRepo) syncUserLevel(ctx context.Context, userID uuid.UUID) error {
 		UPDATE users
 		SET level = (
 			1 + (
-				COALESCE((SELECT SUM(xp) FROM user_course_points WHERE user_id = users.id), 0)::bigint / 180
+				COALESCE((SELECT SUM(xp) FROM user_xp_events WHERE user_id = users.id), 0)::bigint / 180
 			)
 		)::integer
 		WHERE id = $1
@@ -347,9 +367,9 @@ func (r *UserRepo) syncAllUserLevels(ctx context.Context) error {
 		FROM (
 			SELECT
 				u.id,
-				(1 + (COALESCE(SUM(ucp.xp), 0)::bigint / 180))::integer AS computed_level
+				(1 + (COALESCE(SUM(uxe.xp), 0)::bigint / 180))::integer AS computed_level
 			FROM users u
-			LEFT JOIN user_course_points ucp ON ucp.user_id = u.id
+			LEFT JOIN user_xp_events uxe ON uxe.user_id = u.id
 			GROUP BY u.id
 		) AS levels
 		WHERE users.id = levels.id
